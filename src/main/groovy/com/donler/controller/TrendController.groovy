@@ -39,7 +39,6 @@ class TrendController {
 
     @ResponseBody
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.DELETE)
-    @ApiOperation(response = )
     def getShowTimeById(@PathVariable("showtimeId") def showtimeId) {
 
 
