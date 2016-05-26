@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
  * Created by jason on 5/25/16.
  */
 @ToString(includeNames = true)
-class ShowTimePublishRequestBody {
+class ShowtimePublishRequestBody {
     @NotNull(message = "请输入评论的内容")
     @ApiModelProperty(notes = "瞬间内容", example = "马克飞象真好用")
     String content // 瞬间内容

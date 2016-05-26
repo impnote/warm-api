@@ -1,6 +1,6 @@
 package com.donler
 
-import com.donler.repository.trend.ShowTimeRepository
+import com.donler.repository.trend.ShowtimeRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
@@ -11,11 +11,13 @@ class WarmSpringApplication implements CommandLineRunner {
 
 
 	@Autowired
-	ShowTimeRepository showTimeRepository
+	ShowtimeRepository showTimeRepository
 
 	@Override
 	void run(String... args) throws Exception {
-	}
+
+
+    }
 
 	static void main(String[] args) {
 		SpringApplication.run WarmSpringApplication, args
