@@ -4,6 +4,7 @@ import com.donler.model.CreateAndModifyTimeStamp
 import com.donler.model.ImageUrlUnit
 import com.donler.model.persistent.CommentArrItem
 import groovy.transform.ToString
+import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
 /**
  * Created by jason on 5/23/16.
@@ -14,14 +15,25 @@ import org.springframework.data.annotation.Id
 @ToString(includeNames = true)
 class ShowTime {
     @Id
+    @ApiModelProperty(notes = "瞬间的id")
     String id // 瞬间的id
+    @ApiModelProperty(notes = "瞬间的内容")
     String content // 瞬间的内容
+    @ApiModelProperty(notes = "配图的url数组")
     List<ImageUrlUnit> images // 配图的url数组
+    @ApiModelProperty(notes = "属于的活动,为空则为非活动瞬间")
     String activityId  // 属于的活动,为空则为非活动瞬间
+    @ApiModelProperty(notes = "指定可见群组id,为空默认为全体可见")
     List<String> obviousTeamIds // 指定可见群组id,为空默认为全体可见
+    @ApiModelProperty(notes = "发布者")
     String authorId // 发布者
+    @ApiModelProperty(notes = "点赞数组")
     List<String> approves // 点赞数组
+    @ApiModelProperty(notes = "评论数组")
     List<CommentArrItem> comments // 评论数组
-    CreateAndModifyTimeStamp timeStamp // 时间戳
+    @ApiModelProperty(notes = "时间戳")
+    CreateAndModifyTimeStamp timeStamp = new CreateAndModifyTimeStamp(createdAt: new Date(), updatedAt: new Date()) // 时间戳
+
+
 
 }

@@ -6,6 +6,11 @@ config:
     bucketName: "donler-warm"
     urlPrefix: "http://donler-warm.oss-cn-qingdao.aliyuncs.com/"
 
+spring:
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ssXXX
+    time-zone: GMT+8
+
 ---
 
 spring.profiles: development
