@@ -20,7 +20,7 @@ import javax.validation.Valid
  */
 @RestController
 @RequestMapping("/trend")
-@Api(value = "trend", tags = ["动态"])
+@Api(value = "trend", tags = ["动态"], consumes = "application/json", produces = "application/json")
 class TrendController {
 
     @Autowired
