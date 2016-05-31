@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 import javax.validation.Valid
-
 /**
  * Created by jason on 5/25/16.
  */
@@ -51,7 +50,7 @@ class TrendController {
             showtimeRepository.delete(showtimeId)
             return ResponseMsg.ok("删除成功")
         } : {
-            throw new NotFoundException("id为[$showtimeId]的瞬间未找到")
+            throw new NotFoundException("id为${showtimeId}的瞬间")
         }
     }
 

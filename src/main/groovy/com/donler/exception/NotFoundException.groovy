@@ -1,25 +1,21 @@
 package com.donler.exception
 
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
+
 /**
  * Created by jason on 5/26/16.
  */
+@ResponseStatus(HttpStatus.NOT_FOUND)
 class NotFoundException extends RuntimeException{
     NotFoundException() {
     }
 
-    NotFoundException(String var1) {
-        super(var1)
+
+    // TODO
+    NotFoundException(def msg) {
+        super("未找到: [$msg]")
     }
 
-    NotFoundException(String var1, Throwable var2) {
-        super(var1, var2)
-    }
 
-    NotFoundException(Throwable var1) {
-        super(var1)
-    }
-
-    NotFoundException(String var1, Throwable var2, boolean var3, boolean var4) {
-        super(var1, var2, var3, var4)
-    }
 }

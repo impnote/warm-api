@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
+
 /**
  * Created by jason on 5/27/16.
  */
@@ -29,5 +30,5 @@ class User {
     @JsonIgnore
     String password
     @JsonIgnore
-    Token token
+    String tokenId // token id
 }

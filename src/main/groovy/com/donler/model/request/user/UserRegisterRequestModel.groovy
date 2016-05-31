@@ -21,7 +21,7 @@ class UserRegisterRequestModel {
     @ApiModelProperty(notes = "邮箱", example = "lefttjs@gmail.com")
     String email
     @NotNull
-    @ApiModelProperty(notes = "密码", example = "密码")
+    @ApiModelProperty(notes = "密码", example = "leftjs")
     String password
     @NotNull
     @ApiModelProperty(notes = "公司id")

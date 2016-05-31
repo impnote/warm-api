@@ -41,5 +41,4 @@ class Activity {
     CreateAndModifyTimestamp timestamp
 
 
-
 }

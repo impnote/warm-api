@@ -10,7 +10,7 @@ class MD5Util {
     static final String salt = "com.donler.warm api by jason"
 
     static String md5Encode(String inStr) {
-        MessageDigest md5 = null;
+        MessageDigest md5;
         try {
             md5 = MessageDigest.getInstance("MD5");
         } catch (Exception e) {

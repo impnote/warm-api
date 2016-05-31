@@ -1,11 +1,13 @@
 package com.donler.model.persistent.trend
 
+import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
 
 /**
  * Created by jason on 5/27/16.
  */
+@ToString(includeNames = true)
 class Token {
     @Id
     @ApiModelProperty(notes = "token的id")

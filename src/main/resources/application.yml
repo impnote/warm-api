@@ -10,11 +10,15 @@ spring:
   jackson:
     date-format: yyyy-MM-dd'T'HH:mm:ssXXX
     time-zone: GMT+8
+  profiles:
+    active: development
+
 
 ---
 
 spring.profiles: development
 server.port: 8080
+
 
 ---
 
