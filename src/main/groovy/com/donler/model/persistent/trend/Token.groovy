@@ -17,5 +17,5 @@ class Token {
     @ApiModelProperty(notes = "token字符串")
     String token
     @ApiModelProperty(notes = "过期时间")
-    String expiredTime
+    Date expiredTime
 }

@@ -1,12 +1,16 @@
 package com.donler.controller
 
+import com.donler.config.AppConfig
 import com.donler.exception.BadRequestException
 import com.donler.exception.DatabaseDuplicateException
+import com.donler.model.persistent.trend.Token
 import com.donler.model.persistent.trend.User
 import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
+import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
+import com.donler.service.TokenService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 /**
  * Created by jason on 5/27/16.
@@ -27,17 +32,29 @@ class UserController {
     @Autowired
     UserRepository userRepository
 
+    @Autowired
+    TokenService tokenService
+
+    @Autowired
+    AppConfig appConfig
+
+    @Autowired
+    TokenRepository tokenRepository
+
+
 
     @ApiOperation(value = "登录", notes = "根据传入的用户名/邮箱/手机号码和密码来进行登录")
     @RequestMapping(path = "/login", method = RequestMethod.POST)
-    def login(@Valid @RequestBody UserLoginRequestModel body) {
+    def login(@Valid @RequestBody UserLoginRequestModel body, HttpServletRequest req) {
 
 
         def user = userRepository.findByUsernameOrPhoneOrEmail(body?.loginInfo, body?.loginInfo, body?.loginInfo)
         user?.password != MD5Util.md5Encode(body?.password ?: "") ? {
             throw new BadRequestException("用户名或密码错误")
         }: {
-            return user
+            def token = tokenService.generateToken(user.id)
+            return tokenRepository.save(new Token(userId: user.id, token: token, expiredTime: new Date((System.currentTimeMillis() + appConfig.expiredTime.toBigInteger()).longValue())))
+
         }
 
 

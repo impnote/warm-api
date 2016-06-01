@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
  * Created by jason on 5/30/16.
  */
 interface TokenRepository extends MongoRepository<Token, String> {
-    Token findByTokenAndExpiredTimeLessThan(def token, def time)
+    Token findByUserId(String UserId)
 }

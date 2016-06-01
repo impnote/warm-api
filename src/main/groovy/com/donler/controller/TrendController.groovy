@@ -9,6 +9,7 @@ import com.donler.model.response.ResponseMsg
 import com.donler.repository.trend.ShowtimeRepository
 import com.donler.service.OSSService
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
@@ -31,6 +32,7 @@ class TrendController {
     @ResponseBody
     @RequestMapping(value = "/showtime/publish", method = RequestMethod.POST)
     @ApiOperation(response = Showtime.class, value = "发布瞬间", notes = "根据传入信息发布瞬间")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def publishShowtime(@Valid @RequestBody ShowtimePublishRequestBody body) {
         Showtime inline = showtimeRepository.save(new Showtime(
                 content: body.content,
@@ -45,6 +47,7 @@ class TrendController {
     @ResponseBody
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.DELETE)
     @ApiOperation(response = ResponseMsg.class, value = "删除瞬间", notes = "根据传入的瞬间id删除一个瞬间")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def deleteShowtimeById(@PathVariable("showtimeId") String showtimeId) {
         showtimeRepository.exists(showtimeId) ? {
             showtimeRepository.delete(showtimeId)
@@ -58,6 +61,7 @@ class TrendController {
     @ResponseBody
     @RequestMapping(value = "/activity/publish", method = RequestMethod.POST)
     @ApiOperation(response = Activity.class, value = "发布活动", notes = "根据传入的信息发布活动")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def publishActivity(@Valid @RequestBody ActivityPublishRequestBody body) {
 
         return null

@@ -1,8 +1,10 @@
 package com.donler
 
+import com.donler.config.AppConfig
 import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
+import com.donler.service.TokenService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
@@ -18,6 +20,12 @@ class WarmSpringApplication implements CommandLineRunner {
 	UserRepository userRepository
 	@Autowired
 	TokenRepository tokenRepository
+	@Autowired
+	TokenService tokenService
+
+
+	@Autowired
+	AppConfig appConfig
 
 	@Override
 	void run(String... args) throws Exception {
@@ -25,6 +33,8 @@ class WarmSpringApplication implements CommandLineRunner {
 		showTimeRepository.deleteAll()
 		userRepository.deleteAll()
 		tokenRepository.deleteAll()
+
+
 
 	}
 

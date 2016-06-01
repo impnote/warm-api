@@ -28,6 +28,8 @@ repositories {
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+	compile('io.jsonwebtoken:jjwt:0.6.0')
+	compile('org.springframework.boot:spring-boot-starter-aop')
 //	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 //	runtime('mysql:mysql-connector-java')
 //	compile('com.mysema.querydsl:querydsl-mongodb:3.7.3')

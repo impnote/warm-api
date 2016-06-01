@@ -5,6 +5,10 @@ config:
     accessKeySecret: "6P1vpfW9nGU8FtcGBSYAubfuBLjlf6"
     bucketName: "donler-warm"
     urlPrefix: "http://donler-warm.oss-cn-qingdao.aliyuncs.com/"
+  app:
+    secretKey: "donler's warm spring api server"
+#    过期时间 七天 毫秒数
+    expiredTime: 604800000
 
 spring:
   jackson:
