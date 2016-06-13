@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
-
 /**
  * Created by jason on 5/26/16.
  */
@@ -19,17 +18,16 @@ class ErrorController {
 
     final Logger log = LoggerFactory.getLogger(this.getClass())
 
+
+
     @ExceptionHandler(DatabaseDuplicateException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
-    def handleNotFoundException(Exception ex) {
-        log.error("异常:" + ex)
+    def handleDatabaseDuplicateException(Exception ex) {
+        ex.stackTrace = null
+        log.error("异常:${ex}")
 //        return ResponseMsg.error(ex.getLocalizedMessage(), HttpStatus.NOT_FOUND.value())
         return ex
     }
 
-
-
-
-//    TODO 异常处理
 }

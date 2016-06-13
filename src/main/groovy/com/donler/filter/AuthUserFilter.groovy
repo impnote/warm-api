@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 /**
  * Created by jason on 6/1/16.
@@ -30,10 +31,12 @@ class AuthUserFilter implements Filter {
 
     @Override
     void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+
         def req = request as HttpServletRequest
+        def res = response as HttpServletResponse
         println(req.getRequestURI())
         def needAuths = [~/\/trend.*/]
-        if(needAuths.any {req.getRequestURI().matches(it)}) {
+        if (needAuths.any { req.getRequestURI().matches(it) }) {
             def tokenStr = req.getHeader("x-token")
             if (!tokenStr) {
                 throw new UnAuthException("请传入x-token请求头")
@@ -43,13 +46,13 @@ class AuthUserFilter implements Filter {
                 throw new UnAuthException("请传入正确的x-token信息")
             }
             def token = tokenRepository.findByUserId(userId) as Token
-            new Date().before(token.expiredTime) ? {
+            if (new Date().before(token.expiredTime)) {
                 req.setAttribute("user", userRepository.findOne(token?.userId))
-            } : {
+            } else {
                 throw new UnAuthException("token已过期,请重新登录")
             }
         }
-        chain.doFilter(request, response)
+        chain.doFilter(req, res)
     }
 
     @Override

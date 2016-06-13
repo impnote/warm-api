@@ -1,31 +1,29 @@
-package com.donler.model.persistent.trend
+package com.donler.model.response
 
-import com.donler.model.CreateAndModifyTimestamp
+import com.donler.model.*
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
-import org.springframework.data.annotation.Id
 /**
  * Created by jason on 5/26/16.
  */
 @ToString(includeNames = true)
 class Activity {
-    @Id
     @ApiModelProperty("活动的id")
     String id
     @ApiModelProperty("活动名称")
     String name
     @ApiModelProperty("活动封面的配图")
     String image
-    @ApiModelProperty("指定发布群组,为空默认为全体可见")
-    String teamId // 指定发布群组,为空默认为全体可见
-    @ApiModelProperty ("公司id,为当前用户所属公司" )
-    String companyId
+    @ApiModelProperty("可见群组信息,为空默认为全体可见")
+    SimpleTeamModel team // 可见群组信息,为空默认为全体可见
+    @ApiModelProperty("公司信息")
+    SimpleCompanyModel company // 公司信息
     @ApiModelProperty(notes = "活动发起人")
-    String authorId
+    SimpleUserModel author
     @ApiModelProperty(notes = "参与者")
-    List<String> members
+    List<SimpleUserModel> members
     @ApiModelProperty(notes = "精彩瞬间")
-    List<String> showtimes
+    List<SimpleShowtimeModel> showtimes
     @ApiModelProperty("活动开始时间")
     Date startTime
     @ApiModelProperty("活动结束时间")

@@ -26,7 +26,7 @@ class User {
     @ApiModelProperty(notes = "邮箱")
     String email
     @ApiModelProperty(notes = "公司")
-    String company
+    String companyId
     @JsonIgnore
     String password
     @JsonIgnore

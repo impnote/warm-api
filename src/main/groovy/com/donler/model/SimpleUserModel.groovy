@@ -12,5 +12,5 @@ class SimpleUserModel {
     @ApiModelProperty("用户昵称")
     String nickname // 用户昵称
     @ApiModelProperty("用户头像")
-    ImageUrlUnit avatar // 用户头像
+    String avatar // 用户头像
 }

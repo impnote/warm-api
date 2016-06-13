@@ -11,4 +11,6 @@ class CreateAndModifyTimestamp {
     Date createdAt // 创建时间
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
+
+
 }

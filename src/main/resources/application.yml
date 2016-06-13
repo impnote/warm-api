@@ -10,18 +10,18 @@ config:
 #    过期时间 七天 毫秒数
     expiredTime: 604800000
 
+
 spring:
   jackson:
-    date-format: yyyy-MM-dd'T'HH:mm:ssXXX
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
     time-zone: GMT+8
   profiles:
     active: development
 
-
 ---
 
 spring.profiles: development
-server.port: 8080
+server.port: 1234
 
 
 ---

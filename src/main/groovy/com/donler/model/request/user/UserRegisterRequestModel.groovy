@@ -24,6 +24,6 @@ class UserRegisterRequestModel {
     @ApiModelProperty(notes = "密码", example = "leftjs")
     String password
     @NotNull
-    @ApiModelProperty(notes = "公司id")
+    @ApiModelProperty(notes = "公司id", example = "asdfasdf")
     String companyId
 }

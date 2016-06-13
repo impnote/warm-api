@@ -30,9 +30,9 @@ class WarmSpringApplication implements CommandLineRunner {
 	@Override
 	void run(String... args) throws Exception {
 
-		showTimeRepository.deleteAll()
-		userRepository.deleteAll()
-		tokenRepository.deleteAll()
+//		showTimeRepository.deleteAll()
+//		userRepository.deleteAll()
+//		tokenRepository.deleteAll()
 
 
 
