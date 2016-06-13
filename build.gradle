@@ -25,6 +25,10 @@ repositories {
 	mavenCentral()
 }
 
+bootRepackage {
+	mainClass = 'com.donler.WarmSpringApplication'
+}
+
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
