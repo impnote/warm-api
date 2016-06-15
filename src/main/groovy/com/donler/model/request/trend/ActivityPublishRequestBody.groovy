@@ -27,6 +27,8 @@ class ActivityPublishRequestBody {
     Integer memberMax
     @ApiModelProperty("最小人数")
     Integer memberMin
+    @ApiModelProperty("活动地点")
+    String address
     @ApiModelProperty("活动描述")
     String description
 

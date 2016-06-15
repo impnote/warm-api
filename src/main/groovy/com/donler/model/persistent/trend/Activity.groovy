@@ -34,6 +34,8 @@ class Activity {
     Date deadline
     @ApiModelProperty("最大人数")
     Integer memberMax
+    @ApiModelProperty("活动地址")
+    String address
     @ApiModelProperty("最小人数")
     Integer memberMin
     @ApiModelProperty("活动描述")

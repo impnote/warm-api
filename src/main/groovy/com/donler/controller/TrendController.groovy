@@ -134,10 +134,31 @@ class TrendController {
                 deadline: body?.deadline,
                 memberMax: body?.memberMax,
                 memberMin: body?.memberMin,
+                address: body?.address,
                 description: body?.description,
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
+        return generateResponseActivityByPresistentActivity(activity)
+    }
 
+    @ResponseBody
+    @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
+    @ApiOperation(value = "获取所有活动", notes = "获取所有活动信息")
+    List<ResActivity> getAllActivity() {
+        List<Activity> list = activityRepository.findAll()
+        def newList = []
+        list.each {
+            newList << generateResponseActivityByPresistentActivity(it)
+        }
+        return newList
+    }
+
+    /**
+     *
+     * @param activity
+     * @return
+     */
+    ResActivity generateResponseActivityByPresistentActivity(Activity activity) {
         def author = userRepository.findOne(activity.authorId) as User
         def team = !!activity?.teamId ? teamRepository.findOne(activity?.teamId) : null
         def company = companyRepository.findOne(activity?.companyId) as Company
@@ -187,18 +208,10 @@ class TrendController {
                 deadline: activity.deadline,
                 memberMax: activity.memberMax,
                 memberMin: activity.memberMin,
+                address: activity.address,
                 description: activity.description,
                 timestamp: activity.timestamp
         )
-    }
-
-    /**
-     *
-     * @param activity
-     * @return
-     */
-    ResActivity generateResponseActivityByPresistentActivity(Activity activity) {
-        return null
     }
 
     @ResponseBody
