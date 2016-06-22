@@ -34,10 +34,11 @@ class AuthUserFilter implements Filter {
 
         def req = request as HttpServletRequest
         def res = response as HttpServletResponse
+        println(req.method)
         println(req.getRequestURI())
         def needAuths = [~/\/trend.*/]
         def notNeedAuths = [~/\/trend(.*)list/]
-        if (!notNeedAuths.any { req.getRequestURI().matches(it) } && needAuths.any { req.getRequestURI().matches(it) }) {
+        if (!notNeedAuths.any { req.getRequestURI().matches(it) } && needAuths.any { req.getRequestURI().matches(it) } && req.method.toUpperCase() != "GET") {
             def tokenStr = req.getHeader("x-token")
             if (!tokenStr) {
                 throw new UnAuthException("请传入x-token请求头")

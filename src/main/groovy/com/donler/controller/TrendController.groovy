@@ -1,19 +1,16 @@
 package com.donler.controller
 
 import com.donler.exception.NotFoundException
-import com.donler.model.CreateAndModifyTimestamp
-import com.donler.model.SimpleCompanyModel
-import com.donler.model.SimpleShowtimeModel
-import com.donler.model.SimpleTeamModel
-import com.donler.model.SimpleUserModel
-import com.donler.model.persistent.trend.Activity
-import com.donler.model.persistent.trend.Company
-import com.donler.model.persistent.trend.Showtime
-import com.donler.model.persistent.trend.User
+import com.donler.exception.UnAuthException
+import com.donler.model.*
+import com.donler.model.persistent.trend.*
 import com.donler.model.request.trend.ActivityPublishRequestBody
 import com.donler.model.request.trend.ShowtimePublishRequestBody
 import com.donler.model.response.Activity as ResActivity
+import com.donler.model.response.ApproveArrItem
+import com.donler.model.response.CommentArrItem
 import com.donler.model.response.ResponseMsg
+import com.donler.model.response.Showtime as ResShowtime
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.company.TeamRepository
 import com.donler.repository.trend.ActivityRepository
@@ -54,33 +51,56 @@ class TrendController {
     @Autowired
     OSSService ossService
 
+    /**
+     * 发布瞬间
+     * @param body
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/publish", method = RequestMethod.POST)
-    @ApiOperation(response = Showtime.class, value = "发布瞬间", notes = "根据传入信息发布瞬间")
+    @ApiOperation(value = "发布瞬间", notes = "根据传入信息发布瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def publishShowtime(@Valid @RequestBody ShowtimePublishRequestBody body, HttpServletRequest req) {
+    ResShowtime publishShowtime(@Valid @RequestBody ShowtimePublishRequestBody body, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
-        Showtime inline = showtimeRepository.save(new Showtime(
+        def activity = activityRepository.findOne(body?.activityId)
+        def team = teamRepository.findOne(body?.teamId)
+        Showtime showtime = showtimeRepository.save(new Showtime(
                 content: body.content,
-                activityId: body?.activityId,
-                teamId: body?.teamId,
-                companyId: currentUser.companyId,
+                activityId: !!activity ? activity.id : null,
+                teamId: !!team ? team?.id : null,
+                companyId: currentUser?.companyId,
                 images: ossService.uploadFilesToOSS(body.imagesData),
-                authorId: currentUser.id,
+                authorId: currentUser?.id,
                 timestamp: new CreateAndModifyTimestamp(createdAt: new Date(), updatedAt: new Date())
         ))
 
-        return inline
+        // 建立关联 更新活动中的showtimes字段
+        if (!!showtime.activityId) {
+            def oldActivity = activityRepository.findOne(showtime?.activityId)
+            !!oldActivity?.showtimes ? oldActivity.showtimes.push(showtime?.id) : oldActivity.setShowtimes([showtime?.id])
+            activityRepository.save(oldActivity)
+        }
+        return generateResponseShowtimeByPersistentShowtime(showtime)
+
     }
 
+    /**
+     * 删除瞬间
+     * @param showtimeId
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.DELETE)
     @ApiOperation(response = ResponseMsg.class, value = "删除瞬间", notes = "根据传入的瞬间id删除一个瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def deleteShowtimeById(@PathVariable("showtimeId") String showtimeId, HttpServletRequest req) {
-        print(req.getAttribute('user'))
-
         if (showtimeRepository.exists(showtimeId)) {
+            def user = req.getAttribute('user') as User
+            if (showtimeRepository.findOne(showtimeId).authorId != user.id) {
+                throw new UnAuthException("您没有权限这么做!!!")
+            }
             showtimeRepository.delete(showtimeId)
             return ResponseMsg.ok("删除成功")
         } else {
@@ -88,26 +108,67 @@ class TrendController {
         }
     }
 
+    /**
+     * 更新瞬间
+     * @param showtimeId
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.PUT)
     @ApiOperation(response = ResponseMsg.class, value = "更新瞬间", notes = "根据传入的瞬间的id更新一个瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def updateShowtimeById(@PathVariable("showtimeId") String showtimeId) {
-        return null
+    def updateShowtimeById(@PathVariable("showtimeId") String showtimeId,@Valid @RequestBody ShowtimePublishRequestBody body) {
+        def showtime = showtimeRepository.findOne(showtimeId)
+        if (!showtime) {
+            throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
+        }
+        def newShowtime = showtimeRepository.save(showtime)
+        return ResponseMsg.ok(generateResponseShowtimeByPersistentShowtime(newShowtime))
     }
 
+    /**
+     * 获取单个瞬间
+     * @param showtimeId
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.GET)
-    @ApiOperation(response = ResponseMsg.class, value = "更新瞬间", notes = "根据传入的瞬间的id获取一个瞬间")
-    def getShowtimeById(String showtimeId) {
-        return null
+    @ApiOperation(response = ResponseMsg.class, value = "获取指定瞬间", notes = "根据传入的瞬间的id获取一个瞬间")
+    def getShowtimeById(@PathVariable("showtimeId") String showtimeId) {
+        def showtime = showtimeRepository.findOne(showtimeId)
+        if (!showtime) {
+            throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
+        }
+        return generateResponseShowtimeByPersistentShowtime(showtime)
+    }
+
+    /**
+     * 获取指定活动的瞬间
+     * @param activityId
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/showtime/by/activity/{activityId}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取指定活动瞬间", notes = "根据活动的id获取该活动的所有瞬间")
+    def getShowtimeByActivityId(@PathVariable("activityId") String activityId) {
+        def list = showtimeRepository.findByActivityId(activityId)
+        def newList = []
+        list.each {
+            newList << generateResponseShowtimeByPersistentShowtime(it)
+        }
+        return newList
     }
 
     @ResponseBody
-    @RequestMapping(value = "/showtime/by/activity/{activityId}", method = RequestMethod.GET)
-    @ApiOperation(value = "获取活动瞬间", notes = "根据活动的id获取该活动的所有瞬间")
-    def getShowtimeByActivityId(String activityId) {
-        return null
+    @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
+    @ApiOperation(value = "获取所有活动", notes = "获取所有瞬间信息")
+    List<ResShowtime> getAllShowtime() {
+        List<Showtime> list = showtimeRepository.findAll()
+        def newList = []
+        list.each {
+            newList << generateResponseShowtimeByPersistentShowtime(it)
+        }
+        return newList
     }
 
     /**
@@ -138,7 +199,7 @@ class TrendController {
                 description: body?.description,
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
-        return generateResponseActivityByPresistentActivity(activity)
+        return generateResponseActivityByPersistentActivity(activity)
     }
 
     @ResponseBody
@@ -148,23 +209,108 @@ class TrendController {
         List<Activity> list = activityRepository.findAll()
         def newList = []
         list.each {
-            newList << generateResponseActivityByPresistentActivity(it)
+            newList << generateResponseActivityByPersistentActivity(it)
         }
         return newList
     }
 
     /**
+     * 获取指定活动的详情
+     * @param activityId
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/activity/{activityId}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取活动详情", notes = "根据活动的id获取活动的详情")
+    ResActivity getActivityById(@PathVariable("activityId")String activityId) {
+        return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
+    }
+
+
+    /**
+     * 根据传入的持久化瞬间生成res瞬间
+     * @param showtime
+     * @return
+     */
+    ResShowtime generateResponseShowtimeByPersistentShowtime(Showtime showtime) {
+        Activity activity = activityRepository.findOne(showtime?.activityId)
+        User showtimeAuthor = userRepository.findOne(showtime?.authorId)
+        def activityAuthor = !!activity?.authorId ? userRepository.findOne(activity?.authorId) : null
+        Team showtimeTeam = !!showtime?.teamId ? teamRepository.findOne(showtime?.teamId) : null
+        Company showtimeCompany = companyRepository.findOne(showtime?.companyId)
+        return new ResShowtime(
+                id: showtime?.id,
+                content: showtime?.content,
+                images: showtime?.images,
+                activity: !!activity ? new SimpleActivityModel(
+                        id: activity?.id,
+                        name: activity?.name,
+                        image: activity?.image,
+                        author: new SimpleUserModel(
+                                id: activityAuthor?.id,
+                                nickname: activityAuthor?.nickname,
+                                avatar: activityAuthor?.avatar
+                        )
+                ) : null,
+                team: !!showtimeTeam ? new SimpleTeamModel(
+                        id: showtimeTeam?.id,
+                        name: showtimeTeam?.name,
+                        imageUrl: showtimeTeam?.image
+                ) : null,
+                company: !!showtimeCompany ? new SimpleCompanyModel(
+                        id: showtimeCompany?.id,
+                        name: showtimeCompany?.name,
+                        imageUrl: showtimeCompany?.image
+                ) : null,
+                author: new SimpleUserModel(
+                        id: showtimeAuthor?.id,
+                        nickname: showtimeAuthor?.nickname,
+                        avatar: showtimeAuthor?.avatar
+                ),
+                timestamp: new CreateAndModifyTimestamp(
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                ),
+                approves: showtime?.approves?.collect{
+                    def approver = userRepository.findOne(it?.userId)
+                    return new ApproveArrItem(
+                            user: new SimpleUserModel(
+                                    id: approver?.id,
+                                    nickname: approver?.nickname,
+                                    avatar: approver?.avatar
+                            ),
+                            timestamp: it?.timestamp
+                    )
+                },
+                comments: showtime?.comments?.collect {
+                    def commenter = userRepository.findOne(it?.userId)
+                    return new CommentArrItem(
+                            user: new SimpleUserModel(
+                                    id: commenter?.id,
+                                    nickname: commenter?.nickname,
+                                    avatar: commenter?.avatar
+                            ),
+                            comment: it?.comment,
+                            timestamp: it?.timestamp
+                    )
+                }
+        )
+    }
+
+    /**
      *
+     * 根据持久化活动生成res活动
      * @param activity
      * @return
      */
-    ResActivity generateResponseActivityByPresistentActivity(Activity activity) {
-        def author = userRepository.findOne(activity.authorId) as User
+    ResActivity generateResponseActivityByPersistentActivity(Activity activity) {
+        if (!activity) return new ResActivity()
+        def author = userRepository.findOne(activity?.authorId) as User
         def team = !!activity?.teamId ? teamRepository.findOne(activity?.teamId) : null
         def company = companyRepository.findOne(activity?.companyId) as Company
         return new ResActivity(
-                id: activity.id,
-                name: activity.name,
+                id: activity?.id,
+                name: activity?.name,
                 image: activity?.image,
                 team: !!team ? new SimpleTeamModel(
                         id: team?.id,
@@ -177,7 +323,7 @@ class TrendController {
                         imageUrl: company?.image
                 ),
                 author: new SimpleUserModel(
-                        id: author.id,
+                        id: author?.id,
                         nickname: author?.nickname,
                         avatar: author?.avatar
                 ),
@@ -191,35 +337,29 @@ class TrendController {
                 },
                 showtimes: activity?.showtimes?.collect {
                     def showtime = showtimeRepository.findOne(it)
-                    def showtimeAuthor = userRepository.findOne(showtime.authorId)
+                    def showtimeAuthor = userRepository.findOne(showtime?.authorId)
                     return new SimpleShowtimeModel(
-                            id : showtime.id,
-                            content: showtime.content,
-                            images: showtime.images,
+                            id : showtime?.id,
+                            content: showtime?.content,
+                            images: showtime?.images,
                             author: new SimpleUserModel(
-                                    id: showtimeAuthor.id,
-                                    nickname: showtimeAuthor.nickname,
-                                    avatar: showtimeAuthor.avatar
+                                    id: showtimeAuthor?.id,
+                                    nickname: showtimeAuthor?.nickname,
+                                    avatar: showtimeAuthor?.avatar
                             )
                     )
                 },
                 startTime: activity?.startTime,
                 endTime: activity?.endTime,
-                deadline: activity.deadline,
-                memberMax: activity.memberMax,
-                memberMin: activity.memberMin,
-                address: activity.address,
-                description: activity.description,
-                timestamp: activity.timestamp
+                deadline: activity?.deadline,
+                memberMax: activity?.memberMax,
+                memberMin: activity?.memberMin,
+                address: activity?.address,
+                description: activity?.description,
+                timestamp: activity?.timestamp
         )
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/activity/{activityId}", method = RequestMethod.GET)
-    @ApiOperation(value = "获取活动详情", notes = "根据活动的id获取活动的详情")
-    ResActivity getActivityById(@PathVariable("activityId")String activityId) {
-        return new ResActivity()
-    }
 
 
 

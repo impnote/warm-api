@@ -1,10 +1,10 @@
 package com.donler.model.persistent.trend
 
-import com.donler.model.*
+import com.donler.model.CreateAndModifyTimestamp
+import com.donler.model.ImageUrlUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
-
 /**
  * Created by jason on 5/23/16.
  */
@@ -33,6 +33,6 @@ class Showtime {
     @ApiModelProperty(notes = "评论")
     List<CommentArrItem> comments // 评论数组
     @ApiModelProperty(notes = "时间戳")
-    CreateAndModifyTimestamp timestamp 
-    // 时间戳
+    CreateAndModifyTimestamp timestamp  // 时间戳
+
 }

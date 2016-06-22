@@ -1,6 +1,11 @@
 package com.donler.model.response
 
-import com.donler.model.*
+import com.donler.model.CreateAndModifyTimestamp
+import com.donler.model.ImageUrlUnit
+import com.donler.model.SimpleActivityModel
+import com.donler.model.SimpleCompanyModel
+import com.donler.model.SimpleTeamModel
+import com.donler.model.SimpleUserModel
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 /**
@@ -18,9 +23,11 @@ class Showtime {
     @ApiModelProperty(notes = "配图的url数组")
     List<ImageUrlUnit> images // 配图的url数组
     @ApiModelProperty(notes = "属于的活动,为空则为非活动瞬间")
-    String activity  // 属于的活动,为空则为非活动瞬间
-    @ApiModelProperty(notes = "指定可见群组id,为空默认为全体可见")
-    List<SimpleTeamModel> obviousTeams // 指定可见群组id,为空默认为全体可见
+    SimpleActivityModel activity  // 属于的活动,为空则为非活动瞬间
+    @ApiModelProperty(notes = "指定可见群组,为空默认为全体可见")
+    SimpleTeamModel team // 指定群组id,为空默认为全体可见
+    @ApiModelProperty("公司")
+    SimpleCompanyModel company // 公司
     @ApiModelProperty(notes = "发布者")
     SimpleUserModel author // 发布者
     @ApiModelProperty(notes = "点赞数组")
@@ -28,5 +35,5 @@ class Showtime {
     @ApiModelProperty(notes = "评论")
     List<CommentArrItem> comments // 评论数组
     @ApiModelProperty(notes = "时间戳")
-    CreateAndModifyTimestamp timestamp // 时间戳
+    CreateAndModifyTimestamp timestamp  // 时间戳
 }
