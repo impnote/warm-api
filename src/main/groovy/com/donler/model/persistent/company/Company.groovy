@@ -1,4 +1,4 @@
-package com.donler.model.persistent.trend
+package com.donler.model.persistent.company
 
 import com.donler.model.CreateAndModifyTimestamp
 import groovy.transform.ToString

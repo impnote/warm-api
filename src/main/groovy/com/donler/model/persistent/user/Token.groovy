@@ -1,4 +1,4 @@
-package com.donler.model.persistent.trend
+package com.donler.model.persistent.user
 
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty

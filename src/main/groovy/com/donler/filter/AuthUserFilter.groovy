@@ -1,7 +1,7 @@
 package com.donler.filter
 
 import com.donler.exception.UnAuthException
-import com.donler.model.persistent.trend.Token
+import com.donler.model.persistent.user.Token
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.TokenService
@@ -38,6 +38,10 @@ class AuthUserFilter implements Filter {
         println(req.getRequestURI())
         def needAuths = [~/\/trend.*/]
         def notNeedAuths = [~/\/trend(.*)list/]
+
+        /**
+         * 根据白名单 黑名单 和请求方式来校验用户身份
+         */
         if (!notNeedAuths.any { req.getRequestURI().matches(it) } && needAuths.any { req.getRequestURI().matches(it) } && req.method.toUpperCase() != "GET") {
             def tokenStr = req.getHeader("x-token")
             if (!tokenStr) {

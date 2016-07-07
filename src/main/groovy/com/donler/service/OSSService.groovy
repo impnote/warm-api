@@ -23,8 +23,11 @@ class OSSService {
      * @return file url path
      */
     String uploadFileToOSS(String code) {
+        if (code.isEmpty()) {
+            return null
+        }
         if (code.indexOf("data") == -1) {
-           throw new RuntimeException("base64字符串异常,必须包含data参数")
+            throw new RuntimeException("base64字符串异常,必须包含data参数")
         }
         def ossClient = new OSSClient(ossConfig.endpoint, ossConfig.accessKeyId, ossConfig.accessKeySecret)
         def codeArr = code.tokenize(",")
@@ -42,8 +45,11 @@ class OSSService {
      * @return url数组
      */
     List<ImageUrlUnit> uploadFilesToOSS(List<ImageUploadDataUnit> images) {
+        if (images.isEmpty()) {
+            return null
+        }
         def list = []
-        images.eachWithIndex {it, i ->
+        images.eachWithIndex { it, i ->
             list << new ImageUrlUnit(index: i, name: it?.name ?: "image-$i", imageUrl: uploadFileToOSS(it.imageData))
         }
         return list

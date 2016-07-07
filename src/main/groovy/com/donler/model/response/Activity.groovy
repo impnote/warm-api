@@ -37,7 +37,7 @@ class Activity {
     @ApiModelProperty("活动地点")
     String address
     @ApiModelProperty("活动描述")
-    String description
+    String desc
     @ApiModelProperty("活动发布时间戳")
     CreateAndModifyTimestamp timestamp
 

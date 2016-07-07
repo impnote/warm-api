@@ -30,6 +30,6 @@ class ActivityPublishRequestBody {
     @ApiModelProperty("活动地点")
     String address
     @ApiModelProperty("活动描述")
-    String description
+    String desc
 
 }

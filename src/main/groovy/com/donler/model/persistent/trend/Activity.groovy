@@ -39,7 +39,7 @@ class Activity {
     @ApiModelProperty("最小人数")
     Integer memberMin
     @ApiModelProperty("活动描述")
-    String description
+    String desc
     @ApiModelProperty("活动发布时间戳")
     CreateAndModifyTimestamp timestamp
 

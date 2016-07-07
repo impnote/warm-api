@@ -1,4 +1,4 @@
-package com.donler.model.persistent.trend
+package com.donler.model.persistent.user
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import groovy.transform.ToString

@@ -1,7 +1,7 @@
 package com.donler.controller
 
 import com.donler.model.CreateAndModifyTimestamp
-import com.donler.model.persistent.trend.Company
+import com.donler.model.persistent.company.Company
 import com.donler.model.response.Company as ResCompany
 import com.donler.model.request.company.CompanyCreateRequestBody
 import com.donler.repository.company.CompanyRepository

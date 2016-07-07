@@ -3,9 +3,16 @@ package com.donler.controller
 import com.donler.exception.NotFoundException
 import com.donler.exception.UnAuthException
 import com.donler.model.*
-import com.donler.model.persistent.trend.*
+import com.donler.model.persistent.company.Company
+import com.donler.model.persistent.company.Team
+import com.donler.model.persistent.trend.Activity
+import com.donler.model.persistent.trend.Showtime
+import com.donler.model.persistent.trend.Vote
+import com.donler.model.persistent.trend.VoteOptionInfo
+import com.donler.model.persistent.user.User
 import com.donler.model.request.trend.ActivityPublishRequestBody
 import com.donler.model.request.trend.ShowtimePublishRequestBody
+import com.donler.model.request.trend.VotePublishRequestBody
 import com.donler.model.response.Activity as ResActivity
 import com.donler.model.response.ApproveArrItem
 import com.donler.model.response.CommentArrItem
@@ -15,6 +22,7 @@ import com.donler.repository.company.CompanyRepository
 import com.donler.repository.company.TeamRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.ShowtimeRepository
+import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import io.swagger.annotations.Api
@@ -50,6 +58,9 @@ class TrendController {
 
     @Autowired
     OSSService ossService
+
+    @Autowired
+    VoteRepository voteRepository
 
     /**
      * 发布瞬间
@@ -117,7 +128,8 @@ class TrendController {
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.PUT)
     @ApiOperation(response = ResponseMsg.class, value = "更新瞬间", notes = "根据传入的瞬间的id更新一个瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def updateShowtimeById(@PathVariable("showtimeId") String showtimeId,@Valid @RequestBody ShowtimePublishRequestBody body) {
+    def updateShowtimeById(
+            @PathVariable("showtimeId") String showtimeId, @Valid @RequestBody ShowtimePublishRequestBody body) {
         def showtime = showtimeRepository.findOne(showtimeId)
         if (!showtime) {
             throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
@@ -196,7 +208,7 @@ class TrendController {
                 memberMax: body?.memberMax,
                 memberMin: body?.memberMin,
                 address: body?.address,
-                description: body?.description,
+                desc: body?.desc,
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
         return generateResponseActivityByPersistentActivity(activity)
@@ -222,10 +234,46 @@ class TrendController {
     @ResponseBody
     @RequestMapping(value = "/activity/{activityId}", method = RequestMethod.GET)
     @ApiOperation(value = "获取活动详情", notes = "根据活动的id获取活动的详情")
-    ResActivity getActivityById(@PathVariable("activityId")String activityId) {
+    ResActivity getActivityById(@PathVariable("activityId") String activityId) {
         return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
     }
 
+//
+//    @ApiModelProperty("投票的配图url,可以为空")
+//    String image
+//    @ApiModelProperty("指定群组id,为空默认为全体可见")
+//    String teamId // 指定群组id,为空默认为全体可见
+//    @ApiModelProperty("投票内容")
+//    String content // 投票内容
+//    @ApiModelProperty("投票选项")
+//    List<VoteOptionInfo> options
+//    @ApiModelProperty("投票的评论信息")
+//    List<com.donler.model.persistent.trend.CommentArrItem> comments
+//    @ApiModelProperty("投票发起人")
+//    String authorId
+//    @ApiModelProperty("投票时间戳")
+//    CreateAndModifyTimestamp timestamp
+
+    @ResponseBody
+    @RequestMapping(value = "/vote/publish", method = RequestMethod.POST)
+    @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def publishVote(@Valid @RequestBody VotePublishRequestBody body, HttpServletRequest req) {
+        return voteRepository.save(new Vote(
+                image: ossService.uploadFileToOSS(body?.image?.imageData),
+                teamId: body?.teamId,
+                content: body?.content,
+                options: body?.options?.collect {
+                    return new VoteOptionInfo(
+                            name: it,
+                            votedUserIds: []
+                    )
+                },
+                comments: [],
+                authorId: (req.getAttribute("user") as User).id,
+                timestamp: new CreateAndModifyTimestamp(createdAt: new Date(), updatedAt: new Date())
+        ))
+    }
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
@@ -271,7 +319,7 @@ class TrendController {
                         createdAt: new Date(),
                         updatedAt: new Date()
                 ),
-                approves: showtime?.approves?.collect{
+                approves: showtime?.approves?.collect {
                     def approver = userRepository.findOne(it?.userId)
                     return new ApproveArrItem(
                             user: new SimpleUserModel(
@@ -339,7 +387,7 @@ class TrendController {
                     def showtime = showtimeRepository.findOne(it)
                     def showtimeAuthor = userRepository.findOne(showtime?.authorId)
                     return new SimpleShowtimeModel(
-                            id : showtime?.id,
+                            id: showtime?.id,
                             content: showtime?.content,
                             images: showtime?.images,
                             author: new SimpleUserModel(
@@ -355,14 +403,10 @@ class TrendController {
                 memberMax: activity?.memberMax,
                 memberMin: activity?.memberMin,
                 address: activity?.address,
-                description: activity?.description,
+                desc: activity?.desc,
                 timestamp: activity?.timestamp
         )
     }
-
-
-
-
 
 
 }

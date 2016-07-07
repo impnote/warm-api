@@ -4,8 +4,8 @@ import com.donler.config.AppConfig
 import com.donler.exception.BadRequestException
 import com.donler.exception.DatabaseDuplicateException
 import com.donler.exception.NotFoundException
-import com.donler.model.persistent.trend.Token
-import com.donler.model.persistent.trend.User
+import com.donler.model.persistent.user.Token
+import com.donler.model.persistent.user.User
 import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.repository.company.CompanyRepository

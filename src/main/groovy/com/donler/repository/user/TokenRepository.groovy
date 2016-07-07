@@ -1,6 +1,6 @@
 package com.donler.repository.user
 
-import com.donler.model.persistent.trend.Token
+import com.donler.model.persistent.user.Token
 import org.springframework.data.mongodb.repository.MongoRepository
 
 /**

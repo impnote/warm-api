@@ -1,6 +1,6 @@
 package com.donler.repository.company
 
-import com.donler.model.persistent.trend.Team
+import com.donler.model.persistent.company.Team
 import org.springframework.data.mongodb.repository.MongoRepository
 
 /**
