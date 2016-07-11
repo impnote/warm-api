@@ -1,6 +1,5 @@
 package com.donler.model.request.trend
 
-import com.donler.model.request.ImageUploadDataUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 
@@ -13,8 +12,6 @@ class ActivityPublishRequestBody {
 
     @NotNull(message = "活动名称不能为空")
     String name
-    @ApiModelProperty("活动封面的配图")
-    ImageUploadDataUnit image
     @ApiModelProperty("指定群组id,为空默认为全体可见")
     String teamId // 指定群组id,为空默认为全体可见
     @ApiModelProperty(value = "活动开始时间")

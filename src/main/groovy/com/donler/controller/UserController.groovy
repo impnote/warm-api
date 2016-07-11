@@ -56,7 +56,14 @@ class UserController {
             throw new BadRequestException("用户名或密码错误")
         } else {
             def token = tokenService.generateToken(user.id)
-            return tokenRepository.save(new Token(userId: user.id, token: token, expiredTime: new Date((System.currentTimeMillis() + appConfig.expiredTime.toBigInteger()).longValue())))
+            def oldToken = tokenRepository.findByUserId(user.id)
+            if (!!oldToken) {
+                oldToken.token = token
+                oldToken.expiredTime = new Date((System.currentTimeMillis() + appConfig.expiredTime.toBigInteger()).longValue())
+                return tokenRepository.save(oldToken)
+            }else {
+                return tokenRepository.save(new Token(userId: user.id, token: token, expiredTime: new Date((System.currentTimeMillis() + appConfig.expiredTime.toBigInteger()).longValue())))
+            }
 
         }
 

@@ -25,11 +25,13 @@ import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
+import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
@@ -191,24 +193,25 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/activity/publish", method = RequestMethod.POST)
-    @ApiOperation(value = "发布活动", notes = "根据传入的信息发布活动")
+    @ApiOperation(value = "发布活动", notes = "根据传入的信息发布活动, body example: {\"address\":\"string\",\"deadline\":\"2016-07-11T07:38:32.641Z\",\"desc\":\"string\",\"endTime\":\"2016-07-11T07:38:32.641Z\",\"memberMax\":0,\"memberMin\":0,\"name\":\"string\",\"startTime\":\"2016-07-11T07:38:32.641Z\",\"teamId\":\"string\"} ")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResActivity publishActivity(@Valid @RequestBody ActivityPublishRequestBody body, HttpServletRequest req) {
+    ResActivity publishActivity(@RequestPart String body, @RequestPart MultipartFile file,  HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
+        ActivityPublishRequestBody newBody = ValidationUtil.validateModelAttribute(ActivityPublishRequestBody.class, body) as ActivityPublishRequestBody
 
         Activity activity = activityRepository.save(new Activity(
-                name: body?.name,
-                image: ossService.uploadFileToOSS(body?.image?.imageData),
-                teamId: body?.teamId,
+                name: newBody?.name,
+                image: ossService.uploadFileToOSS(file),
+                teamId: newBody?.teamId,
                 authorId: currentUser.id,
                 companyId: currentUser.companyId,
-                startTime: body?.startTime,
-                endTime: body?.endTime,
-                deadline: body?.deadline,
-                memberMax: body?.memberMax,
-                memberMin: body?.memberMin,
-                address: body?.address,
-                desc: body?.desc,
+                startTime: newBody?.startTime,
+                endTime: newBody?.endTime,
+                deadline: newBody?.deadline,
+                memberMax: newBody?.memberMax,
+                memberMin: newBody?.memberMin,
+                address: newBody?.address,
+                desc: newBody?.desc,
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
         return generateResponseActivityByPersistentActivity(activity)

@@ -51,6 +51,7 @@ class AuthUserFilter implements Filter {
                 throw new UnAuthException("请传入正确的x-token信息")
             }
             def token = tokenRepository.findByUserId(userId) as Token
+            println(token)
             if (new Date().before(token.expiredTime)) {
                 req.setAttribute("user", userRepository.findOne(token?.userId))
             } else {

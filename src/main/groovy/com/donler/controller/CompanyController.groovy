@@ -1,13 +1,12 @@
 package com.donler.controller
 
-import com.donler.exception.AttrNotValidException
 import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.persistent.company.Company
 import com.donler.model.request.company.CompanyCreateRequestBody
 import com.donler.model.response.Company as ResCompany
 import com.donler.repository.company.CompanyRepository
 import com.donler.service.OSSService
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-
-import javax.validation.Validation
-import javax.validation.Validator
-import javax.validation.ValidatorFactory
 /**
  * Created by jason on 5/27/16.
  */
@@ -44,24 +39,25 @@ class CompanyController {
 
 
 
-        CompanyCreateRequestBody company
-        try {
-            company = new ObjectMapper().readValue(body, CompanyCreateRequestBody)
-        } catch (Exception ex) {
-            throw new AttrNotValidException(ex.localizedMessage)
-        }
-
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory()
-        Validator vd = vf.getValidator()
-        def set = vd.validate(company)
-        if (set.size() > 0) {
-            def errorMsg = []
-            set.forEach {
-                errorMsg << "[${it.propertyPath}] ${it.message}"
-            }
-            def errMsg = errorMsg.join(',')
-            throw new AttrNotValidException(errMsg)
-        }
+//        CompanyCreateRequestBody company
+//        try {
+//            company = new ObjectMapper().readValue(body, CompanyCreateRequestBody)
+//        } catch (Exception ex) {
+//            throw new AttrNotValidException(ex.localizedMessage)
+//        }
+//
+//        ValidatorFactory vf = Validation.buildDefaultValidatorFactory()
+//        Validator vd = vf.getValidator()
+//        def set = vd.validate(company)
+//        if (set.size() > 0) {
+//            def errorMsg = []
+//            set.forEach {
+//                errorMsg << "[${it.propertyPath}] ${it.message}"
+//            }
+//            def errMsg = errorMsg.join(',')
+//            throw new AttrNotValidException(errMsg)
+//        }
+        CompanyCreateRequestBody company = ValidationUtil.validateModelAttribute(CompanyCreateRequestBody.class, body)
 
         // TODO 唯一性检查
         Company saveCompany = companyRepository.save(new Company(
