@@ -1,21 +1,25 @@
 package com.donler.controller
 
+import com.donler.exception.AttrNotValidException
 import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.persistent.company.Company
-import com.donler.model.response.Company as ResCompany
 import com.donler.model.request.company.CompanyCreateRequestBody
+import com.donler.model.response.Company as ResCompany
 import com.donler.repository.company.CompanyRepository
 import com.donler.service.OSSService
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
-import javax.validation.Valid
-
+import javax.validation.Validation
+import javax.validation.Validator
+import javax.validation.ValidatorFactory
 /**
  * Created by jason on 5/27/16.
  */
@@ -31,22 +35,47 @@ class CompanyController {
     OSSService ossService
 
 
-    @ApiOperation(value = "创建公司", notes = "根据传入的信息创建一个公司")
+    @ApiOperation(value = "创建公司", notes = "根据传入的信息创建一个公司,body example: {\"name\": \"动梨软件有限公司\", \"emailSuffix\": \"donler\"}")
     @RequestMapping(path = "/create", method = RequestMethod.POST)
-    ResCompany createCompany(@Valid @RequestBody CompanyCreateRequestBody body) {
+    ResCompany createCompany(
+            @RequestPart
+                    String body,
+            @RequestPart MultipartFile file) {
+
+
+
+        CompanyCreateRequestBody company
+        try {
+            company = new ObjectMapper().readValue(body, CompanyCreateRequestBody)
+        } catch (Exception ex) {
+            throw new AttrNotValidException(ex.localizedMessage)
+        }
+
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory()
+        Validator vd = vf.getValidator()
+        def set = vd.validate(company)
+        if (set.size() > 0) {
+            def errorMsg = []
+            set.forEach {
+                errorMsg << "[${it.propertyPath}] ${it.message}"
+            }
+            def errMsg = errorMsg.join(',')
+            throw new AttrNotValidException(errMsg)
+        }
+
         // TODO 唯一性检查
-        Company company = companyRepository.save(new Company(
-                name: body?.name,
-                emailSuffix: body?.emailSuffix,
-                image: ossService.uploadFileToOSS(body?.image?.imageData),
+        Company saveCompany = companyRepository.save(new Company(
+                name: company?.name,
+                emailSuffix: company?.emailSuffix,
+                image: ossService.uploadFileToOSS(file),
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
         return new ResCompany(
-                id: company?.id,
-                name: company?.name,
-                emailSuffix: company?.emailSuffix,
-                image: company?.image,
-                timestamp: company?.timestamp
+                id: saveCompany?.id,
+                name: saveCompany?.name,
+                emailSuffix: saveCompany?.emailSuffix,
+                image: saveCompany?.image,
+                timestamp: saveCompany?.timestamp
         )
     }
 

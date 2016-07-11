@@ -1,11 +1,9 @@
 package com.donler.model.request.company
 
-import com.donler.model.request.ImageUploadDataUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 
 import javax.validation.constraints.NotNull
-
 /**
  * Created by jason on 6/13/16.
  */
@@ -19,8 +17,5 @@ class CompanyCreateRequestBody {
     @ApiModelProperty(value = "邮箱后缀", example = "donler.com")
     String emailSuffix // 邮箱后缀
 
-    @NotNull
-    @ApiModelProperty("公司配图")
-    ImageUploadDataUnit image // 公司配图
 
 }

@@ -6,6 +6,7 @@ import com.donler.model.ImageUrlUnit
 import com.donler.model.request.ImageUploadDataUnit
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import sun.misc.BASE64Decoder
 
 /**
@@ -36,6 +37,15 @@ class OSSService {
         def urlPrefix = ossConfig.urlPrefix
         ossClient.putObject(ossConfig.bucketName, "$name.$suffix", new ByteArrayInputStream(new BASE64Decoder().decodeBuffer(codeArr.get(1))))
         ossClient.shutdown()
+        return "$urlPrefix$name.$suffix"
+    }
+
+    String uploadFileToOSS(MultipartFile file) {
+        def suffix = file.originalFilename.tokenize('.').last()
+        def name = UUID.randomUUID().toString()
+        def ossClient = new OSSClient(ossConfig.endpoint, ossConfig.accessKeyId, ossConfig.accessKeySecret)
+        def urlPrefix = ossConfig.urlPrefix
+        ossClient.putObject(ossConfig.bucketName, "$name.$suffix", file.getInputStream())
         return "$urlPrefix$name.$suffix"
     }
 
