@@ -65,4 +65,20 @@ class OSSService {
         return list
     }
 
+    /**
+     * 上传数组上传到OSS
+     * @param images
+     * @return url数组
+     */
+    List<ImageUrlUnit> uploadMultipartFilesToOSS(MultipartFile[] images) {
+        if (images.length == 0) {
+            return null
+        }
+        def list = []
+        images.eachWithIndex { it, i ->
+            list << new ImageUrlUnit(index: i, name: "image-$i", imageUrl: uploadFileToOSS(it))
+        }
+        return list
+    }
+
 }

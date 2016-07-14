@@ -35,7 +35,7 @@ class CompanyController {
     ResCompany createCompany(
             @RequestPart
                     String body,
-            @RequestPart MultipartFile file) {
+            @RequestPart MultipartFile[] files) {
 
 
 
@@ -63,7 +63,7 @@ class CompanyController {
         Company saveCompany = companyRepository.save(new Company(
                 name: company?.name,
                 emailSuffix: company?.emailSuffix,
-                image: ossService.uploadFileToOSS(file),
+                image: ossService.uploadFileToOSS(files.first()),
                 timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
         ))
         return new ResCompany(

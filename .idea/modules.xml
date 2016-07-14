@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/warm-spring.iml" filepath="$PROJECT_DIR$/warm-spring.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/warm-api.iml" filepath="$PROJECT_DIR$/.idea/modules/warm-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/warm-api_main.iml" filepath="$PROJECT_DIR$/.idea/modules/warm-api_main.iml" group="warm-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/warm-api_test.iml" filepath="$PROJECT_DIR$/.idea/modules/warm-api_test.iml" group="warm-api" />
     </modules>
   </component>
 </project>

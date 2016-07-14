@@ -1,6 +1,7 @@
 package com.donler.model.response
 
 import com.donler.model.CreateAndModifyTimestamp
+import com.donler.model.ImageUrlUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 /**

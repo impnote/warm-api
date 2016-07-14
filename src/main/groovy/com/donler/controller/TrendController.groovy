@@ -72,18 +72,19 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/showtime/publish", method = RequestMethod.POST)
-    @ApiOperation(value = "发布瞬间", notes = "根据传入信息发布瞬间")
+    @ApiOperation(value = "发布瞬间", notes = "根据传入信息发布瞬间, body example: {\"activityId\":\"string\",\"content\":\"马克飞象真好用\",\"teamId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResShowtime publishShowtime(@Valid @RequestBody ShowtimePublishRequestBody body, HttpServletRequest req) {
+    ResShowtime publishShowtime(@RequestPart String body,@RequestPart MultipartFile[] files, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
-        def activity = activityRepository.findOne(body?.activityId)
-        def team = teamRepository.findOne(body?.teamId)
+        ShowtimePublishRequestBody newBody = ValidationUtil.validateModelAttribute(ShowtimePublishRequestBody.class, body)
+        def activity = activityRepository.findOne(newBody?.activityId)
+        def team = teamRepository.findOne(newBody?.teamId)
         Showtime showtime = showtimeRepository.save(new Showtime(
-                content: body.content,
+                content: newBody?.content,
                 activityId: !!activity ? activity.id : null,
                 teamId: !!team ? team?.id : null,
                 companyId: currentUser?.companyId,
-                images: ossService.uploadFilesToOSS(body.imagesData),
+                images: ossService.uploadMultipartFilesToOSS(files),
                 authorId: currentUser?.id,
                 timestamp: new CreateAndModifyTimestamp(createdAt: new Date(), updatedAt: new Date())
         ))
@@ -195,13 +196,13 @@ class TrendController {
     @RequestMapping(value = "/activity/publish", method = RequestMethod.POST)
     @ApiOperation(value = "发布活动", notes = "根据传入的信息发布活动, body example: {\"address\":\"string\",\"deadline\":\"2016-07-11T07:38:32.641Z\",\"desc\":\"string\",\"endTime\":\"2016-07-11T07:38:32.641Z\",\"memberMax\":0,\"memberMin\":0,\"name\":\"string\",\"startTime\":\"2016-07-11T07:38:32.641Z\",\"teamId\":\"string\"} ")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResActivity publishActivity(@RequestPart String body, @RequestPart MultipartFile file,  HttpServletRequest req) {
+    ResActivity publishActivity(@RequestPart String body, @RequestPart MultipartFile[] files,  HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
         ActivityPublishRequestBody newBody = ValidationUtil.validateModelAttribute(ActivityPublishRequestBody.class, body) as ActivityPublishRequestBody
 
         Activity activity = activityRepository.save(new Activity(
                 name: newBody?.name,
-                image: ossService.uploadFileToOSS(file),
+                image: ossService.uploadFileToOSS(files?.first()),
                 teamId: newBody?.teamId,
                 authorId: currentUser.id,
                 companyId: currentUser.companyId,
