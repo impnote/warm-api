@@ -1,7 +1,7 @@
 package com.donler.controller
 
 import com.donler.repository.company.CompanyRepository
-import com.donler.repository.company.TeamRepository
+import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.user.TokenRepository

@@ -35,7 +35,7 @@ class AuthUserFilter implements Filter {
         def res = response as HttpServletResponse
         println(req.method)
         println(req.getRequestURI())
-        def needAuths = [~/\/trend.*/]
+        def needAuths = [~/\/trend.*/, ~/\/team.*/]
         def notNeedAuths = [~/\/trend(.*)list/]
 
         /**

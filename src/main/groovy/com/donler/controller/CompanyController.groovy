@@ -29,11 +29,9 @@ import java.nio.file.Path
 /**
  * Created by jason on 5/27/16.
  */
-//测试测试
-//123123
 @RestController
 @RequestMapping("/company")
-@Api(value = "company", tags = ["公司"], consumes = "application/json", produces = "application/json")
+@Api(value = "company", tags = ["公司"])
 class CompanyController {
 
     @Autowired
@@ -91,7 +89,7 @@ class CompanyController {
             @RequestParam(required = false)
                     Integer limit
     ) {
-        def list = companyRepository.findByEmailSuffix(emailSuffix, new PageRequest(page ?: 0, limit ?: 10))
+        def list = !!emailSuffix ? companyRepository.findByEmailSuffix(emailSuffix, new PageRequest(page ?: 0, limit ?: 10)) : companyRepository.findAll(new PageRequest(page ?: 0, limit ?: 10))
         return list.map(new Converter<Company, ResCompany>() {
             @Override
             ResCompany convert(Company source) {

@@ -4,7 +4,7 @@ import com.donler.exception.NotFoundException
 import com.donler.exception.UnAuthException
 import com.donler.model.*
 import com.donler.model.persistent.company.Company
-import com.donler.model.persistent.company.Team
+import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.trend.Activity
 import com.donler.model.persistent.trend.Showtime
 import com.donler.model.persistent.trend.Vote
@@ -19,7 +19,7 @@ import com.donler.model.response.CommentArrItem
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Showtime as ResShowtime
 import com.donler.repository.company.CompanyRepository
-import com.donler.repository.company.TeamRepository
+import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.trend.VoteRepository
