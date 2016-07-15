@@ -260,7 +260,7 @@ class TrendController {
 
     @ResponseBody
     @RequestMapping(value = "/vote/publish", method = RequestMethod.POST)
-    @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票")
+    @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票 body example: ")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def publishVote(@Valid @RequestBody VotePublishRequestBody body, HttpServletRequest req) {
         return voteRepository.save(new Vote(

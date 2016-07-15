@@ -35,8 +35,6 @@ class WarmSpringApplication implements CommandLineRunner {
 //		tokenRepository.deleteAll()
 
 
-
-
 	}
 
 	static void main(String[] args) {
