@@ -85,7 +85,7 @@ class TeamController {
      * @param limit
      * @return
      */
-    @ApiOperation(value = "(分页)", notes = "获取指定邮箱后缀的公司列表或者全部公司列表")
+    @ApiOperation(value = "获取群组列表(分页)", notes = "获取包含某关键字的群组列表或者该用户所在公司的全部群组列表")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/search", method = RequestMethod.GET)
     Page<ResTeam> searchCompanyByEmailSuffix(
