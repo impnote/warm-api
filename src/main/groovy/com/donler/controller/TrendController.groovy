@@ -77,8 +77,8 @@ class TrendController {
     ResShowtime publishShowtime(@RequestPart String body,@RequestPart MultipartFile[] files, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
         ShowtimePublishRequestBody newBody = ValidationUtil.validateModelAttribute(ShowtimePublishRequestBody.class, body)
-        def activity = activityRepository.findOne(newBody?.activityId)
-        def team = teamRepository.findOne(newBody?.teamId)
+        def activity = !!newBody?.activityId ? activityRepository.findOne(newBody?.activityId) : null
+        def team = !!newBody?.teamId ? teamRepository.findOne(newBody?.teamId) : null
         Showtime showtime = showtimeRepository.save(new Showtime(
                 content: newBody?.content,
                 activityId: !!activity ? activity.id : null,
@@ -90,7 +90,7 @@ class TrendController {
         ))
 
         // 建立关联 更新活动中的showtimes字段
-        if (!!showtime.activityId) {
+        if (!!showtime?.activityId) {
             def oldActivity = activityRepository.findOne(showtime?.activityId)
             !!oldActivity?.showtimes ? oldActivity.showtimes.push(showtime?.id) : oldActivity.setShowtimes([showtime?.id])
             activityRepository.save(oldActivity)
@@ -285,7 +285,7 @@ class TrendController {
      * @return
      */
     ResShowtime generateResponseShowtimeByPersistentShowtime(Showtime showtime) {
-        Activity activity = activityRepository.findOne(showtime?.activityId)
+        Activity activity = !!showtime?.activityId ? activityRepository.findOne(showtime?.activityId) : null
         User showtimeAuthor = userRepository.findOne(showtime?.authorId)
         def activityAuthor = !!activity?.authorId ? userRepository.findOne(activity?.authorId) : null
         Team showtimeTeam = !!showtime?.teamId ? teamRepository.findOne(showtime?.teamId) : null

@@ -25,7 +25,7 @@ repositories {
 	mavenCentral()
 }
 
-bootRepackage {
+springBoot {
 	mainClass = 'com.donler.WarmSpringApplication'
 }
 
@@ -35,6 +35,10 @@ dependencies {
 	compile('io.jsonwebtoken:jjwt:0.6.0')
 	compile('com.yunpian.sdk:yunpian-java-sdk:1.1.1')
 	compile('org.springframework.boot:spring-boot-starter-aop')
+	compile('org.apache.httpcomponents:httpmime:4.5.2')
+	compile('org.glassfish.jersey.core:jersey-client:2.23.1')
+	compile('org.glassfish.jersey.media:jersey-media-multipart:2.23.1')
+	compile('org.glassfish.jersey.media:jersey-media-json-jackson:2.23.1')
 //	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 //	runtime('mysql:mysql-connector-java')
 //	compile('com.mysema.querydsl:querydsl-mongodb:3.7.3')
@@ -57,3 +61,4 @@ eclipse {
 		 containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
 	}
 }
+
