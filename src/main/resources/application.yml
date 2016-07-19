@@ -9,6 +9,8 @@ config:
     secretKey: "donler's warm spring api server"
 #    过期时间 七天 毫秒数
     expiredTime: 604800000
+  yunpian:
+    apiKey: "1120ac9e776bf068778573feebddec43"
 
 
 spring:

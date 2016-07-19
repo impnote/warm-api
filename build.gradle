@@ -33,6 +33,7 @@ bootRepackage {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
 	compile('io.jsonwebtoken:jjwt:0.6.0')
+	compile('com.yunpian.sdk:yunpian-java-sdk:1.1.1')
 	compile('org.springframework.boot:spring-boot-starter-aop')
 //	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 //	runtime('mysql:mysql-connector-java')
