@@ -58,14 +58,17 @@ class CompanyController {
                 name: company?.name,
                 emailSuffix: company?.emailSuffix,
                 image: ossService.uploadFileToOSS(files.first()),
-                timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
+                createdAt: new Date(),
+                updatedAt: new Date()
+
         ))
         return new ResCompany(
                 id: saveCompany?.id,
                 name: saveCompany?.name,
                 emailSuffix: saveCompany?.emailSuffix,
                 image: saveCompany?.image,
-                timestamp: saveCompany?.timestamp
+                createdAt: saveCompany?.createdAt,
+                updatedAt: saveCompany?.updatedAt
         )
     }
 
@@ -98,7 +101,8 @@ class CompanyController {
                         name: source?.name,
                         emailSuffix: source?.emailSuffix,
                         image: source?.image,
-                        timestamp: source?.timestamp
+                        createdAt: source?.createdAt,
+                        updatedAt: source?.updatedAt
                 )
             }
         })

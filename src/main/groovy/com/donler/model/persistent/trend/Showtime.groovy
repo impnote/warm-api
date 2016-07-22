@@ -29,10 +29,13 @@ class Showtime {
     @ApiModelProperty(notes = "发布者")
     String authorId // 发布者
     @ApiModelProperty(notes = "点赞数组")
-    List<ApproveArrItem> approves // 点赞数组
+    List<String> approves // 点赞数组
     @ApiModelProperty(notes = "评论")
-    List<CommentArrItem> comments // 评论数组
-    @ApiModelProperty(notes = "时间戳")
-    CreateAndModifyTimestamp timestamp  // 时间戳
+    List<String> comments // 评论数组
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 
 }

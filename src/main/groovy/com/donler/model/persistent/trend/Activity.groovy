@@ -40,8 +40,11 @@ class Activity {
     Integer memberMin
     @ApiModelProperty("活动描述")
     String desc
-    @ApiModelProperty("活动发布时间戳")
-    CreateAndModifyTimestamp timestamp
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 
 
 }

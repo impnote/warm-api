@@ -23,8 +23,11 @@ class Company {
     @ApiModelProperty("公司配图")
     String image // 公司配图
 
-    @ApiModelProperty("时间戳")
-    CreateAndModifyTimestamp timestamp
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 
 
 

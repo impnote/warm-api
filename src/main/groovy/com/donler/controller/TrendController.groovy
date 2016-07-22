@@ -21,6 +21,8 @@ import com.donler.model.response.Showtime as ResShowtime
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
+import com.donler.repository.trend.ApproveArrItemRepository
+import com.donler.repository.trend.CommentArrItemRepository
 import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.UserRepository
@@ -64,6 +66,12 @@ class TrendController {
     @Autowired
     VoteRepository voteRepository
 
+    @Autowired
+    ApproveArrItemRepository approveArrItemRepository
+
+    @Autowired
+    CommentArrItemRepository commentArrItemRepository
+
     /**
      * 发布瞬间
      * @param body
@@ -86,7 +94,9 @@ class TrendController {
                 companyId: currentUser?.companyId,
                 images: ossService.uploadMultipartFilesToOSS(files),
                 authorId: currentUser?.id,
-                timestamp: new CreateAndModifyTimestamp(createdAt: new Date(), updatedAt: new Date())
+                createdAt: new Date(),
+                updatedAt: new Date()
+
         ))
 
         // 建立关联 更新活动中的showtimes字段
@@ -213,7 +223,8 @@ class TrendController {
                 memberMin: newBody?.memberMin,
                 address: newBody?.address,
                 desc: newBody?.desc,
-                timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
+                createdAt: new Date(),
+                updatedAt: new Date()
         ))
         return generateResponseActivityByPersistentActivity(activity)
     }
@@ -275,7 +286,9 @@ class TrendController {
                 },
                 comments: [],
                 authorId: (req.getAttribute("user") as User).id,
-                timestamp: new CreateAndModifyTimestamp(createdAt: new Date(), updatedAt: new Date())
+                createdAt: new Date(),
+                updatedAt: new Date()
+
         ))
     }
 
@@ -298,6 +311,8 @@ class TrendController {
                         id: activity?.id,
                         name: activity?.name,
                         image: activity?.image,
+                        updatedAt: activity?.updatedAt,
+                        createdAt: activity?.createdAt,
                         author: new SimpleUserModel(
                                 id: activityAuthor?.id,
                                 nickname: activityAuthor?.nickname,
@@ -319,31 +334,35 @@ class TrendController {
                         nickname: showtimeAuthor?.nickname,
                         avatar: showtimeAuthor?.avatar
                 ),
-                timestamp: new CreateAndModifyTimestamp(
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                ),
+                createdAt: showtime?.createdAt,
+                updatedAt: showtime?.updatedAt,
                 approves: showtime?.approves?.collect {
-                    def approver = userRepository.findOne(it?.userId)
+                    def approve = approveArrItemRepository.findOne(it)
+                    def user = userRepository.findOne(approve?.userId)
                     return new ApproveArrItem(
+                            id: approve?.id,
                             user: new SimpleUserModel(
-                                    id: approver?.id,
-                                    nickname: approver?.nickname,
-                                    avatar: approver?.avatar
+                                    id: user?.id,
+                                    nickname: user?.nickname,
+                                    avatar: user?.avatar
                             ),
-                            timestamp: it?.timestamp
+                            createdAt: approve?.createdAt,
+                            updatedAt: approve?.updatedAt
                     )
                 },
                 comments: showtime?.comments?.collect {
-                    def commenter = userRepository.findOne(it?.userId)
+                    def comment = commentArrItemRepository.findOne(it)
+                    def user = userRepository.findOne(comment?.userId)
                     return new CommentArrItem(
+                            id: comment?.id,
                             user: new SimpleUserModel(
-                                    id: commenter?.id,
-                                    nickname: commenter?.nickname,
-                                    avatar: commenter?.avatar
+                                    id: user?.id,
+                                    nickname: user?.nickname,
+                                    avatar: user?.avatar
                             ),
-                            comment: it?.comment,
-                            timestamp: it?.timestamp
+                            comment: comment?.comment,
+                            createdAt: comment?.createdAt,
+                            updatedAt: comment?.updatedAt
                     )
                 }
         )
@@ -408,7 +427,8 @@ class TrendController {
                 memberMin: activity?.memberMin,
                 address: activity?.address,
                 desc: activity?.desc,
-                timestamp: activity?.timestamp
+                createdAt: activity?.createdAt,
+                updatedAt: activity?.updatedAt
         )
     }
 

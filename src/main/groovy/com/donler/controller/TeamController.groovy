@@ -73,7 +73,9 @@ class TeamController {
                 authorId: currentUser?.id,
                 companyId: currentUser?.companyId,
                 desc: team?.desc,
-                timestamp: new CreateAndModifyTimestamp(updatedAt: new Date(), createdAt: new Date())
+                createdAt: new Date(),
+                updatedAt: new Date()
+
         ))
         return generateResponseByPersistentTeam(savedTeam)
     }
@@ -130,7 +132,8 @@ class TeamController {
                 peopleCount: team?.peopleCount,
                 desc: team?.desc,
                 image: team?.image,
-                timestamp: team?.timestamp
+                createdAt: team?.createdAt,
+                updatedAt: team?.updatedAt
         )
     }
 

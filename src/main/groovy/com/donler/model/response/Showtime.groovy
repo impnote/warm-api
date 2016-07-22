@@ -34,6 +34,8 @@ class Showtime {
     List<ApproveArrItem> approves // 点赞数组
     @ApiModelProperty(notes = "评论")
     List<CommentArrItem> comments // 评论数组
-    @ApiModelProperty(notes = "时间戳")
-    CreateAndModifyTimestamp timestamp  // 时间戳
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 }

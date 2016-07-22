@@ -3,7 +3,10 @@ package com.donler.controller
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
+import com.donler.repository.trend.ApproveArrItemRepository
+import com.donler.repository.trend.CommentArrItemRepository
 import com.donler.repository.trend.ShowtimeRepository
+import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
@@ -33,7 +36,12 @@ class AdminController {
     ShowtimeRepository showtimeRepository
     @Autowired
     UserRepository userRepository
-
+    @Autowired
+    ApproveArrItemRepository approveArrItemRepository
+    @Autowired
+    CommentArrItemRepository commentArrItemRepository
+    @Autowired
+    VoteRepository voteRepository
     @Autowired
     OSSService ossService
 
@@ -48,6 +56,9 @@ class AdminController {
         teamRepository.deleteAll()
         showtimeRepository.deleteAll()
         userRepository.deleteAll()
+        approveArrItemRepository.deleteAll()
+        commentArrItemRepository.deleteAll()
+        voteRepository.deleteAll()
         return "success"
     }
 

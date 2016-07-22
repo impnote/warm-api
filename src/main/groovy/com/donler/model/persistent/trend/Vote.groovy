@@ -18,11 +18,14 @@ class Vote {
     @ApiModelProperty("投票内容")
     String content // 投票内容
     @ApiModelProperty("投票选项")
-    List<VoteOptionInfo> options
+    List<String> options
     @ApiModelProperty("投票的评论信息")
-    List<CommentArrItem> comments
+    List<String> comments
     @ApiModelProperty("投票发起人")
     String authorId
-    @ApiModelProperty("投票时间戳")
-    CreateAndModifyTimestamp timestamp
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 }

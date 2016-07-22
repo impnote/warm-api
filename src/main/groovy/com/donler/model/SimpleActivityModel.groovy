@@ -13,6 +13,8 @@ class SimpleActivityModel {
     String image
     @ApiModelProperty(notes = "活动发起人")
     SimpleUserModel author
-    @ApiModelProperty("活动发布时间戳")
-    CreateAndModifyTimestamp timestamp
+    @ApiModelProperty("创建时间")
+    Date createdAt // 创建时间
+    @ApiModelProperty("更新时间")
+    Date updatedAt // 更新时间
 }
