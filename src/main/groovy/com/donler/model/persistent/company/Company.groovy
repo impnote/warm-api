@@ -26,4 +26,6 @@ class Company {
     @ApiModelProperty("时间戳")
     CreateAndModifyTimestamp timestamp
 
+
+
 }

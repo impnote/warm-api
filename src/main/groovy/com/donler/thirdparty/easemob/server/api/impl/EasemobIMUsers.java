@@ -21,7 +21,6 @@ public class EasemobIMUsers extends EasemobRestAPI implements IMUserAPI {
 		String url = getContext().getSeriveURL() + getResourceRootURI();
 		BodyWrapper body = (BodyWrapper) payload;
 		HeaderWrapper header = HeaderHelper.getDefaultHeaderWithToken();
-		
 		return getInvoker().sendRequest(HTTPMethod.METHOD_POST, url, header, body, null);
 	}
 
@@ -36,7 +35,6 @@ public class EasemobIMUsers extends EasemobRestAPI implements IMUserAPI {
 	public Object getIMUsersByUserName(String userName) {
 		String url = getContext().getSeriveURL() + getResourceRootURI() + "/" + userName;
 		HeaderWrapper header = HeaderHelper.getDefaultHeaderWithToken();
-		
 		return getInvoker().sendRequest(HTTPMethod.METHOD_GET, url, header, null, null);
 	}
 
