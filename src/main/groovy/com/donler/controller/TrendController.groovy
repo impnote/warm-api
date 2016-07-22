@@ -18,20 +18,25 @@ import com.donler.model.response.ApproveArrItem
 import com.donler.model.response.CommentArrItem
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Showtime as ResShowtime
+import com.donler.model.response.Vote as ResVote
+import com.donler.model.response.VoteOptionInfo as ResVoteOptionInfo
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.ApproveArrItemRepository
 import com.donler.repository.trend.CommentArrItemRepository
 import com.donler.repository.trend.ShowtimeRepository
+import com.donler.repository.trend.VoteOptionInfoRepository
 import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.annotation.Id
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -67,6 +72,9 @@ class TrendController {
     VoteRepository voteRepository
 
     @Autowired
+    VoteOptionInfoRepository voteOptionInfoRepository
+
+    @Autowired
     ApproveArrItemRepository approveArrItemRepository
 
     @Autowired
@@ -82,7 +90,7 @@ class TrendController {
     @RequestMapping(value = "/showtime/publish", method = RequestMethod.POST)
     @ApiOperation(value = "发布瞬间", notes = "根据传入信息发布瞬间, body example: {\"activityId\":\"string\",\"content\":\"马克飞象真好用\",\"teamId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResShowtime publishShowtime(@RequestPart String body,@RequestPart MultipartFile[] files, HttpServletRequest req) {
+    ResShowtime publishShowtime(@RequestPart String body, @RequestPart MultipartFile[] files, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
         ShowtimePublishRequestBody newBody = ValidationUtil.validateModelAttribute(ShowtimePublishRequestBody.class, body)
         def activity = !!newBody?.activityId ? activityRepository.findOne(newBody?.activityId) : null
@@ -187,7 +195,7 @@ class TrendController {
     @ResponseBody
     @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有活动", notes = "获取所有瞬间信息")
-    List<ResShowtime> getAllShowtime() {
+    List<ResShowtime> getAllShowtimes() {
         List<Showtime> list = showtimeRepository.findAll()
         def newList = []
         list.each {
@@ -206,16 +214,17 @@ class TrendController {
     @RequestMapping(value = "/activity/publish", method = RequestMethod.POST)
     @ApiOperation(value = "发布活动", notes = "根据传入的信息发布活动, body example: {\"address\":\"string\",\"deadline\":\"2016-07-11T07:38:32.641Z\",\"desc\":\"string\",\"endTime\":\"2016-07-11T07:38:32.641Z\",\"memberMax\":0,\"memberMin\":0,\"name\":\"string\",\"startTime\":\"2016-07-11T07:38:32.641Z\",\"teamId\":\"string\"} ")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResActivity publishActivity(@RequestPart String body, @RequestPart MultipartFile[] files,  HttpServletRequest req) {
+    ResActivity publishActivity(@RequestPart String body, @RequestPart MultipartFile[] files, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
         ActivityPublishRequestBody newBody = ValidationUtil.validateModelAttribute(ActivityPublishRequestBody.class, body) as ActivityPublishRequestBody
+        def teamId = !!newBody?.teamId ? teamRepository.findOne(newBody?.teamId) : null
 
         Activity activity = activityRepository.save(new Activity(
                 name: newBody?.name,
                 image: ossService.uploadFileToOSS(files?.first()),
-                teamId: newBody?.teamId,
-                authorId: currentUser.id,
-                companyId: currentUser.companyId,
+                teamId: teamId,
+                authorId: currentUser?.id,
+                companyId: currentUser?.companyId,
                 startTime: newBody?.startTime,
                 endTime: newBody?.endTime,
                 deadline: newBody?.deadline,
@@ -229,10 +238,12 @@ class TrendController {
         return generateResponseActivityByPersistentActivity(activity)
     }
 
+
+
     @ResponseBody
     @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有活动", notes = "获取所有活动信息")
-    List<ResActivity> getAllActivity() {
+    List<ResActivity> getAllActivitys() {
         List<Activity> list = activityRepository.findAll()
         def newList = []
         list.each {
@@ -253,36 +264,36 @@ class TrendController {
         return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
     }
 
-//
-//    @ApiModelProperty("投票的配图url,可以为空")
-//    String image
-//    @ApiModelProperty("指定群组id,为空默认为全体可见")
-//    String teamId // 指定群组id,为空默认为全体可见
-//    @ApiModelProperty("投票内容")
-//    String content // 投票内容
-//    @ApiModelProperty("投票选项")
-//    List<VoteOptionInfo> options
-//    @ApiModelProperty("投票的评论信息")
-//    List<com.donler.model.persistent.trend.CommentArrItem> comments
-//    @ApiModelProperty("投票发起人")
-//    String authorId
-//    @ApiModelProperty("投票时间戳")
-//    CreateAndModifyTimestamp timestamp
 
+    /**
+     * 发布投票
+     * @param body
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/vote/publish", method = RequestMethod.POST)
-    @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票 body example: ")
+    @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票,teamId不传为默认全体可见 body example: {\"content\":\"小张我帅不帅\",\"options\":[\"帅\",\"不帅\"],\"teamId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def publishVote(@Valid @RequestBody VotePublishRequestBody body, HttpServletRequest req) {
-        return voteRepository.save(new Vote(
-                image: ossService.uploadFileToOSS(body?.image?.imageData),
-                teamId: body?.teamId,
-                content: body?.content,
-                options: body?.options?.collect {
-                    return new VoteOptionInfo(
-                            name: it,
-                            votedUserIds: []
-                    )
+    ResVote publishVote(@RequestPart String body, @RequestPart MultipartFile[] files, HttpServletRequest req) {
+
+        def currentUser = req.getAttribute("user") as User
+        def company = !!currentUser?.companyId ? companyRepository.findOne(currentUser?.companyId) : null
+        VotePublishRequestBody newBody = ValidationUtil.validateModelAttribute(VotePublishRequestBody.class, body) as VotePublishRequestBody
+        def team = !!newBody?.teamId ? teamRepository.findOne(newBody?.teamId) : null
+
+        def savedVote = voteRepository.save(new Vote(
+                image: ossService.uploadFileToOSS(files?.first()),
+                teamId: !!team ? team?.id : null,
+                companyId: !!company ? company?.id : null,
+                content: newBody?.content,
+                options: newBody?.options.collect {
+                    return (voteOptionInfoRepository.save(
+                            new VoteOptionInfo(
+                                    option: it,
+                                    votedUserIds: []
+                            )
+                    ) as VoteOptionInfo)?.id
                 },
                 comments: [],
                 authorId: (req.getAttribute("user") as User).id,
@@ -290,6 +301,16 @@ class TrendController {
                 updatedAt: new Date()
 
         ))
+
+        return generateResponseVoteByPersistentVote(savedVote)
+
+    }
+
+
+
+    // TODO 分页
+    List<ResVote> getAllVotes() {
+
     }
 
     /**
@@ -431,6 +452,75 @@ class TrendController {
                 updatedAt: activity?.updatedAt
         )
     }
+
+    /**
+     * 根据持久化投票模型生成resVote
+     * @param vote
+     * @return
+     */
+    ResVote generateResponseVoteByPersistentVote(Vote vote) {
+        if (!vote) return new ResVote()
+        def company = !!vote?.companyId ? companyRepository.findOne(vote?.companyId) : null
+        def team = !!vote?.teamId ? teamRepository.findOne(vote?.teamId) : null
+        def user = !!vote?.authorId ? userRepository.findOne(vote?.authorId) : null
+
+        return new ResVote(
+                id: vote?.id,
+                image: vote?.image,
+                company: !!company ? new SimpleCompanyModel(
+                        id: company?.id,
+                        name: company?.name,
+                        imageUrl: company?.image
+                ) : null,
+                team: !!team ? new SimpleTeamModel(
+                        id: team?.id,
+                        name: team?.name,
+                        imageUrl: team?.image
+                ) : null,
+                content: vote?.content,
+                options: vote?.options?.collect {
+                    VoteOptionInfo voteOptionInfo = voteOptionInfoRepository.findOne(it)
+                    return new ResVoteOptionInfo(
+                            id: voteOptionInfo?.id,
+                            option: voteOptionInfo?.option,
+                            votedUsers: voteOptionInfo?.votedUserIds?.collect {
+                                    User votedUser = userRepository.findOne(it)
+                                    return new SimpleUserModel(
+                                            id: votedUser?.id,
+                                            nickname: votedUser?.nickname,
+                                            avatar: votedUser?.avatar
+                                    )
+                            }
+                    )
+                },
+                comments: vote?.comments?.collect {
+                    def comment = commentArrItemRepository.findOne(it)
+                    def commentUser = !!comment?.userId ? userRepository.findOne(comment?.userId) : null
+                    return new CommentArrItem(
+                            id: comment?.id,
+                            user: new SimpleUserModel(
+                                    id: commentUser?.id,
+                                    nickname: commentUser?.nickname,
+                                    avatar: commentUser?.avatar
+                            ),
+                            comment: comment?.comment,
+                            createdAt: comment?.createdAt,
+                            updatedAt: comment?.updatedAt
+                    )
+                },
+                author: !!user ? new SimpleUserModel(
+                        id: user?.id,
+                        nickname: user?.nickname,
+                        avatar: user?.avatar
+                ) : null,
+                createdAt: vote?.createdAt,
+                updatedAt: vote?.updatedAt
+
+
+        )
+    }
+
+
 
 
 }
