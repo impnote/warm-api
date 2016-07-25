@@ -47,7 +47,7 @@ class UserController {
 
 
 
-    @ApiOperation(value = "登录", notes = "根据传入的用户名/邮箱/手机号码和密码来进行登录")
+    @ApiOperation(value = "登录", notes = "根据传入的用户名/邮箱/手机号码和密码来进行登录", response = Token.class)
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     def login(@Valid @RequestBody UserLoginRequestModel body) {
 
@@ -70,15 +70,11 @@ class UserController {
     }
 
 
-    @ApiOperation(value = "注册", notes = "根据传入的信息来进行注册", response = User.class)
+    @ApiOperation(value = "注册", notes = "根据传入的信息来进行注册,companyId非必填项,注册时可以先不指定" , response = User.class)
     @RequestMapping(path = "/register", method = RequestMethod.POST)
     def register(@Valid @RequestBody UserRegisterRequestModel body) {
 
         def company = companyRepository.findOne(body?.companyId)
-
-        if (!company) {
-            throw new NotFoundException("请选择正确的公司")
-        }
 
         if (userRepository.findByUsername(body?.username)) {
             throw new DatabaseDuplicateException("用户名为${body?.username}的用户已经存在")

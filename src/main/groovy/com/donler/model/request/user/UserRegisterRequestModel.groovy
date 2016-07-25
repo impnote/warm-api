@@ -23,7 +23,6 @@ class UserRegisterRequestModel {
     @NotNull
     @ApiModelProperty(notes = "密码", example = "leftjs")
     String password
-    @NotNull
-    @ApiModelProperty(notes = "公司id", example = "asdfasdf")
+    @ApiModelProperty(notes = "公司id,注册时可以不指定,非必填项", example = "asd")
     String companyId
 }

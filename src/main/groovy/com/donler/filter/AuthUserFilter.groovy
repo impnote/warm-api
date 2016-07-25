@@ -35,13 +35,29 @@ class AuthUserFilter implements Filter {
         def res = response as HttpServletResponse
         println(req.method)
         println(req.getRequestURI())
-        def needAuths = [~/\/trend.*/, ~/\/team.*/]
-        def notNeedAuths = [~/\/trend(.*)list/]
+        def needAuths = [
+                ~/\/trend.*/,
+                ~/\/team.*/
+        ]
 
         /**
-         * 根据白名单 黑名单 和请求方式来校验用户身份
+         * get方法中需要验证的url,比如某些search
          */
-        if (!notNeedAuths.any { req.getRequestURI().matches(it) } && needAuths.any { req.getRequestURI().matches(it) } && req.method.toUpperCase() != "GET") {
+        def needAuthsOfGetMethod = [
+                ~/\/team(.*)search/,
+                ~/\/trend(.*)search/
+        ]
+
+
+        /**
+         *  校验规则:
+         *  1.get方法中需要认证的url需要认证,
+         *  2.非get方法中需要认证的url不需要认证
+         *  3.非get请求中所有需要认证的url需要认证
+         */
+        if (( req.method.toUpperCase() != 'GET' || needAuthsOfGetMethod.any { req.requestURI.matches(it)} ) && needAuths.any { req.requestURI.matches(it)}) {
+
+
             def tokenStr = req.getHeader("x-token")
             if (!tokenStr) {
                 throw new UnAuthException("请传入x-token请求头")

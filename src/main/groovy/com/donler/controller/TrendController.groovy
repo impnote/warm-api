@@ -1,21 +1,25 @@
 package com.donler.controller
 
+import com.donler.exception.AttrNotValidException
+import com.donler.exception.BadRequestException
 import com.donler.exception.NotFoundException
 import com.donler.exception.UnAuthException
 import com.donler.model.*
 import com.donler.model.persistent.company.Company
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.trend.Activity
+import com.donler.model.persistent.trend.CommentArrItem
 import com.donler.model.persistent.trend.Showtime
 import com.donler.model.persistent.trend.Vote
 import com.donler.model.persistent.trend.VoteOptionInfo
 import com.donler.model.persistent.user.User
 import com.donler.model.request.trend.ActivityPublishRequestBody
 import com.donler.model.request.trend.ShowtimePublishRequestBody
+import com.donler.model.request.trend.TrendCommentPublishRequestBody
 import com.donler.model.request.trend.VotePublishRequestBody
 import com.donler.model.response.Activity as ResActivity
-import com.donler.model.response.ApproveArrItem
-import com.donler.model.response.CommentArrItem
+import com.donler.model.response.ApproveArrItem as ResApproveArrItem
+import com.donler.model.response.CommentArrItem as ResCommentArrItem
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Showtime as ResShowtime
 import com.donler.model.response.Vote as ResVote
@@ -33,10 +37,13 @@ import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.annotation.Id
+import org.springframework.data.domain.Page
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -175,6 +182,77 @@ class TrendController {
         return generateResponseShowtimeByPersistentShowtime(showtime)
     }
 
+
+    // TODO
+    /**
+     * 发表评论
+     * @param body
+     */
+    @ResponseBody
+    @RequestMapping(value = "/comment/to/trend", method = RequestMethod.POST)
+    @ApiOperation(response = ResponseMsg.class, value = "发表评论", notes = "为指定的动态发表评论")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def commentToTrend(
+            @Valid @RequestBody
+                    TrendCommentPublishRequestBody body,
+            @RequestParam(required = false)
+            @ApiParam(value = "活动的id")
+                    String activityId,
+            @RequestParam(required = false)
+            @ApiParam(value = "投票的id")
+                    String voteId,
+            @ApiParam(value = "瞬间的id")
+            @RequestParam(required = false)
+                    String showtimeId,
+            @ApiParam(value = "话题的id")
+            @RequestParam(required = false)
+                    String topicId,
+            HttpServletRequest req) {
+
+        def user = req.getAttribute('user') as User
+        def querys = [activityId: activityId, voteId: voteId, showtimeId: showtimeId, topicId: topicId]
+        def newQuerys = [:]
+        querys.each { key, value ->
+            println("value${value}")
+            if (value != null) {
+                newQuerys.put(key, value)
+            }
+        }
+
+        def result = ''
+        if (newQuerys.size() == 1) {
+            querys.each { key, value ->
+                switch (key) {
+                    case 'activityId':
+
+                        break;
+                    case 'showtimeId':
+                        def showtime = showtimeRepository.findOne(value)
+                        if (!!showtime) {
+                            def item = commentArrItemRepository.save(new CommentArrItem(
+                                    userId: user?.id,
+                                    comment: body?.comment,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date()
+                            ))
+                            !showtime.comments ? showtime.comments = [item?.id] : showtime.comments.push(item?.id)
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                        }else {
+                            throw new AttrNotValidException("请输入正确的瞬间id")
+                        }
+                        break;
+                    default: break;
+                }
+            }
+        } else {
+            throw new BadRequestException("只能传入一种动态id")
+        }
+
+        return ResponseMsg.ok(result)
+
+    }
+
+
     /**
      * 获取指定活动的瞬间
      * @param activityId
@@ -309,7 +387,12 @@ class TrendController {
 
 
     // TODO 分页
-    List<ResVote> getAllVotes() {
+    Page<ResVote> searchVoteByTeamId(
+            @ApiParam(value = "待查询的群组id,为空默认为用户所在公司全部的投票")
+            String teamId,
+            Integer page,
+            Integer limit
+    ) {
 
     }
 
@@ -360,7 +443,7 @@ class TrendController {
                 approves: showtime?.approves?.collect {
                     def approve = approveArrItemRepository.findOne(it)
                     def user = userRepository.findOne(approve?.userId)
-                    return new ApproveArrItem(
+                    return new ResApproveArrItem(
                             id: approve?.id,
                             user: new SimpleUserModel(
                                     id: user?.id,
@@ -374,7 +457,7 @@ class TrendController {
                 comments: showtime?.comments?.collect {
                     def comment = commentArrItemRepository.findOne(it)
                     def user = userRepository.findOne(comment?.userId)
-                    return new CommentArrItem(
+                    return new ResCommentArrItem(
                             id: comment?.id,
                             user: new SimpleUserModel(
                                     id: user?.id,
@@ -496,7 +579,7 @@ class TrendController {
                 comments: vote?.comments?.collect {
                     def comment = commentArrItemRepository.findOne(it)
                     def commentUser = !!comment?.userId ? userRepository.findOne(comment?.userId) : null
-                    return new CommentArrItem(
+                    return new ResCommentArrItem(
                             id: comment?.id,
                             user: new SimpleUserModel(
                                     id: commentUser?.id,
