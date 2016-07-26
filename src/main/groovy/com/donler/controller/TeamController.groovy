@@ -81,7 +81,7 @@ class TeamController {
     }
 
     /**
-     * 获取公司列表
+     * 获取群组列表
      * @param emailSuffix
      * @param page
      * @param limit

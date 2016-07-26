@@ -35,6 +35,9 @@ class AuthUserFilter implements Filter {
         def res = response as HttpServletResponse
         println(req.method)
         println(req.getRequestURI())
+        /**
+         * 需要验证的url数组
+         */
         def needAuths = [
                 ~/\/trend.*/,
                 ~/\/team.*/

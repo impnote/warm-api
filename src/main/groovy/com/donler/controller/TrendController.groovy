@@ -253,6 +253,62 @@ class TrendController {
     }
 
 
+    @ResponseBody
+    @RequestMapping(value = "/comment/by/trend/list", method = RequestMethod.GET)
+    @ApiOperation( value = "获取某个动态的评论列表", notes = "根据传入的动态的类型和动态的id来获取该动态的评论列表,其中动态的id必须且只能传入一种和一个")
+    ResCommentArrItem[] getCommentListByTrend(
+            @ApiParam("活动id")
+            @RequestParam(required = false)
+                    String activityId,
+            @ApiParam("瞬间id")
+            @RequestParam(required = false)
+                    String showtimeId,
+            @ApiParam("投票id")
+            @RequestParam(required = false)
+                    String voteId,
+            @ApiParam("话题id")
+            @RequestParam(required = false)
+                    String topicId) {
+        def querys = [activityId: activityId, showtimeId: showtimeId, voteId: voteId, topicId: topicId]
+        def newQuerys = [:]
+        querys.each { key, value ->
+            if (value != null) {
+                newQuerys.put(key, value)
+            }
+        }
+
+        def result = []
+        if (newQuerys.size() == 1) {
+            newQuerys.each { key, value ->
+                switch (key) {
+                    case 'activityId':
+                        break
+                    case 'showtimeId':
+                        def showtime = !!value ? showtimeRepository.findOne(value) : null
+                        if (!!showtime) {
+                            result = !!showtime?.comments ? showtime?.comments.toArray().collect { inlineValue ->
+                                def comment = !!inlineValue ? commentArrItemRepository.findOne(inlineValue) : null
+                                if (!!inlineValue) {
+                                    return generateResponseCommentArrItemByPersistentCommentArrItem(comment)
+                                }
+                            } : []
+                        } else {
+                            throw new AttrNotValidException("请检查传入的showtimeId是否正确")
+                        }
+                        break
+                    default:
+                        break
+                }
+            }
+        }else {
+            throw new BadRequestException("只能传入一种动态的id")
+        }
+
+
+        return result
+    }
+
+
     /**
      * 获取指定活动的瞬间
      * @param activityId
@@ -603,6 +659,25 @@ class TrendController {
         )
     }
 
+    /**
+     * 根据持久化的评论item生成res评论item
+     * @param commentArrItem
+     * @return
+     */
+    ResCommentArrItem generateResponseCommentArrItemByPersistentCommentArrItem(CommentArrItem commentArrItem) {
+        def user = !!commentArrItem?.userId ? userRepository.findOne(commentArrItem?.userId) : null
+        return new ResCommentArrItem(
+                id: commentArrItem?.id,
+                comment: commentArrItem?.comment,
+                user: !!user ? new SimpleUserModel(
+                        id: user?.id,
+                        nickname: user?.nickname,
+                        avatar: user?.avatar
+                ) : null,
+                updatedAt: commentArrItem?.updatedAt,
+                createdAt: commentArrItem?.createdAt
+        )
+    }
 
 
 
