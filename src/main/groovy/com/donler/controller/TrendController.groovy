@@ -42,8 +42,10 @@ import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.convert.converter.Converter
 import org.springframework.data.annotation.Id
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -442,13 +444,36 @@ class TrendController {
 
 
 
-    // TODO 分页
+    /**
+     * 根据查询id等参数来筛选投票
+     * @param teamId
+     * @param page
+     * @param limit
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/vote/search", method = RequestMethod.GET)
+    @ApiOperation(value = "获取投票列表", notes = "根据用户传入的查询参数来进行搜索,如果teamId为空,则默认返回该用户所在公司的所有投票,分页参数中,默认为第0页,并且每一页默认为10条记录")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     Page<ResVote> searchVoteByTeamId(
             @ApiParam(value = "待查询的群组id,为空默认为用户所在公司全部的投票")
-            String teamId,
-            Integer page,
-            Integer limit
-    ) {
+            @RequestParam(required = false)
+                    String teamId,
+            @ApiParam(value = "待查询的页码,默认为第0页")
+            @RequestParam(required = false)
+                    Integer page,
+            @ApiParam(value = "每一页的个数,默认为10")
+            @RequestParam(required = false)
+                    Integer limit,
+            HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def list = !!teamId ? voteRepository.findByTeamId(teamId, new PageRequest(page ?: 0, limit ?: 10)) : voteRepository.findByCompanyId(user?.companyId, new PageRequest(page ?: 0, limit ?: 10))
+        return list.map(new Converter<Vote, ResVote>() {
+            @Override
+            ResVote convert(Vote source) {
+                return generateResponseVoteByPersistentVote(source)
+            }
+        })
 
     }
 
