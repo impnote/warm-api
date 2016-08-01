@@ -152,8 +152,7 @@ class TrendController {
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.PUT)
     @ApiOperation(response = ResponseMsg.class, value = "更新瞬间", notes = "根据传入的瞬间的id更新一个瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def updateShowtimeById(
-            @PathVariable("showtimeId") String showtimeId, @Valid @RequestBody ShowtimePublishRequestBody body) {
+    def updateShowtimeById(@PathVariable("showtimeId") String showtimeId, @Valid @RequestBody ShowtimePublishRequestBody body) {
         def showtime = showtimeRepository.findOne(showtimeId)
         if (!showtime) {
             throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
@@ -465,7 +464,13 @@ class TrendController {
 
     }
 
-
+    /**
+     * 发布话题
+     * @param body
+     * @param files
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/topic/publish", method = RequestMethod.POST)
     @ApiOperation(value = "发布话题", notes = "根据请求体发布话题 bodyexample {\"content\":\"这是话题内容\",\"title\":\"这是一个话题的标题\",\"teamId\":\"ABC\"}")
@@ -493,6 +498,33 @@ class TrendController {
         ))
         return generateResponseTopicByPersistentTopic(saveTopic)
     }
+
+    /**
+     * 删除话题
+     * @param topicId
+     * @param req
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/topic/{topicId}", method = RequestMethod.DELETE)
+    @ApiOperation(response = ResponseMsg.class, value = "删除话题", notes = "根据传入的话题id删除一个话题")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = 'header', name = "x-token")
+    def deleteTopicById(@PathVariable String topicId, HttpServletRequest req) {
+        if (topicRepository.exists(topicId)) {
+            def user = req.getAttribute('user') as User
+            if (topicRepository.findOne(topicId).authorId != user.id) {
+                throw new UnAuthException("您没有权限这么做!!!")
+            }
+            topicRepository.delete(topicId)
+            return ResponseMsg.ok("删除成功")
+        } else {
+            throw new NotFoundException("id为${topicId}的话题")
+        }
+
+    }
+
+    // TODO
+//    def updateTopicById(String topicId, TopicPublishRequestBody body)
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
