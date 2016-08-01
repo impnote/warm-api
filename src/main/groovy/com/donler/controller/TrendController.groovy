@@ -7,14 +7,11 @@ import com.donler.exception.UnAuthException
 import com.donler.model.*
 import com.donler.model.persistent.company.Company
 import com.donler.model.persistent.team.Team
-import com.donler.model.persistent.trend.Activity
-import com.donler.model.persistent.trend.CommentArrItem
-import com.donler.model.persistent.trend.Showtime
-import com.donler.model.persistent.trend.Vote
-import com.donler.model.persistent.trend.VoteOptionInfo
+import com.donler.model.persistent.trend.*
 import com.donler.model.persistent.user.User
 import com.donler.model.request.trend.ActivityPublishRequestBody
 import com.donler.model.request.trend.ShowtimePublishRequestBody
+import com.donler.model.request.trend.TopicPublishRequestBody
 import com.donler.model.request.trend.TrendCommentPublishRequestBody
 import com.donler.model.request.trend.VotePublishRequestBody
 import com.donler.model.response.Activity as ResActivity
@@ -22,28 +19,21 @@ import com.donler.model.response.ApproveArrItem as ResApproveArrItem
 import com.donler.model.response.CommentArrItem as ResCommentArrItem
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Showtime as ResShowtime
+import com.donler.model.response.Topic as ResTopic
 import com.donler.model.response.Vote as ResVote
 import com.donler.model.response.VoteOptionInfo as ResVoteOptionInfo
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
-import com.donler.repository.trend.ActivityRepository
-import com.donler.repository.trend.ApproveArrItemRepository
-import com.donler.repository.trend.CommentArrItemRepository
-import com.donler.repository.trend.ShowtimeRepository
-import com.donler.repository.trend.VoteOptionInfoRepository
-import com.donler.repository.trend.VoteRepository
+import com.donler.repository.trend.*
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
-import org.springframework.data.annotation.Id
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.*
@@ -51,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
+
 /**
  * Created by jason on 5/25/16.
  */
@@ -79,6 +70,9 @@ class TrendController {
 
     @Autowired
     VoteRepository voteRepository
+
+    @Autowired
+    TopicRepository topicRepository
 
     @Autowired
     VoteOptionInfoRepository voteOptionInfoRepository
@@ -184,7 +178,6 @@ class TrendController {
         return generateResponseShowtimeByPersistentShowtime(showtime)
     }
 
-
     // TODO
     /**
      * 发表评论
@@ -239,7 +232,7 @@ class TrendController {
                             ))
                             !showtime.comments ? showtime.comments = [item?.id] : showtime.comments.push(item?.id)
                             result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
-                        }else {
+                        } else {
                             throw new AttrNotValidException("请输入正确的瞬间id")
                         }
                         break;
@@ -257,7 +250,7 @@ class TrendController {
 
     @ResponseBody
     @RequestMapping(value = "/comment/by/trend/list", method = RequestMethod.GET)
-    @ApiOperation( value = "获取某个动态的评论列表", notes = "根据传入的动态的类型和动态的id来获取该动态的评论列表,其中动态的id必须且只能传入一种和一个")
+    @ApiOperation(value = "获取某个动态的评论列表", notes = "根据传入的动态的类型和动态的id来获取该动态的评论列表,其中动态的id必须且只能传入一种和一个")
     ResCommentArrItem[] getCommentListByTrend(
             @ApiParam("活动id")
             @RequestParam(required = false)
@@ -302,14 +295,13 @@ class TrendController {
                         break
                 }
             }
-        }else {
+        } else {
             throw new BadRequestException("只能传入一种动态的id")
         }
 
 
         return result
     }
-
 
     /**
      * 获取指定活动的瞬间
@@ -375,7 +367,6 @@ class TrendController {
     }
 
 
-
     @ResponseBody
     @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有活动", notes = "获取所有活动信息")
@@ -399,7 +390,6 @@ class TrendController {
     ResActivity getActivityById(@PathVariable("activityId") String activityId) {
         return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
     }
-
 
     /**
      * 发布投票
@@ -442,8 +432,6 @@ class TrendController {
 
     }
 
-
-
     /**
      * 根据查询id等参数来筛选投票
      * @param teamId
@@ -475,6 +463,35 @@ class TrendController {
             }
         })
 
+    }
+
+
+    @ResponseBody
+    @RequestMapping(value = "/topic/publish", method = RequestMethod.POST)
+    @ApiOperation(value = "发布话题", notes = "根据请求体发布话题 bodyexample {\"content\":\"这是话题内容\",\"title\":\"这是一个话题的标题\",\"teamId\":\"ABC\"}")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    ResTopic publishTopic(
+            @RequestPart
+                    String body,
+
+            @RequestPart
+                    MultipartFile[] files,
+            HttpServletRequest req
+    ) {
+        def currentUser = req.getAttribute("user") as User
+        def topicBody = ValidationUtil.validateModelAttribute(TopicPublishRequestBody.class,body) as TopicPublishRequestBody
+        def saveTopic = topicRepository.save(new Topic(
+                title: topicBody?.title,
+                content: topicBody?.content,
+                companyId: currentUser?.companyId,
+                teamId: topicBody?.teamId,
+                comments: [],
+                authorId: currentUser?.id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                image: files.size()==0 ? null : ossService.uploadFileToOSS(files.first())
+        ))
+        return generateResponseTopicByPersistentTopic(saveTopic)
     }
 
     /**
@@ -648,12 +665,12 @@ class TrendController {
                             id: voteOptionInfo?.id,
                             option: voteOptionInfo?.option,
                             votedUsers: voteOptionInfo?.votedUserIds?.collect {
-                                    User votedUser = userRepository.findOne(it)
-                                    return new SimpleUserModel(
-                                            id: votedUser?.id,
-                                            nickname: votedUser?.nickname,
-                                            avatar: votedUser?.avatar
-                                    )
+                                User votedUser = userRepository.findOne(it)
+                                return new SimpleUserModel(
+                                        id: votedUser?.id,
+                                        nickname: votedUser?.nickname,
+                                        avatar: votedUser?.avatar
+                                )
                             }
                     )
                 },
@@ -704,6 +721,57 @@ class TrendController {
         )
     }
 
+    /**
+     * 根据持久化话题模型生成res话题
+     * @param topic
+     * @return
+     */
+    ResTopic generateResponseTopicByPersistentTopic(Topic topic) {
+        def author = !!topic?.authorId ? userRepository.findOne(topic?.authorId) : null
+        def company = !!topic?.companyId ? companyRepository.findOne(topic?.companyId) : null
+        def team = !!topic?.teamId ? teamRepository.findOne(topic?.teamId) : null
+        return new ResTopic(
+                id: topic?.id,
+                image: topic?.image,
+                company: !!company ? new SimpleCompanyModel(
+                        id: company?.id,
+                        name: company?.name,
+                        imageUrl: company?.image,
+                ) : null,
+                team: !!team ? new SimpleTeamModel(
+                        id: team?.id,
+                        name: team?.name,
+                        imageUrl: team?.image,
+                ) : null,
+                content: topic?.content,
+                title: topic?.title,
+                author: !!author ? new SimpleUserModel(
+                        id: author?.id,
+                        nickname: author?.nickname,
+                        avatar: author?.avatar,
+                ) : null,
+                createdAt: topic?.createdAt,
+                updatedAt: topic?.updatedAt,
+                comments: topic?.comments?.collect {
+                    def comment = commentArrItemRepository.findOne(it)
+                    def commentUser = !!comment?.userId ? userRepository.findOne(comment?.userId) : null
+                    return new ResCommentArrItem(
+                            id: comment?.id,
+                            user: !!commentUser ? new SimpleUserModel(
+                                    id: commentUser?.id,
+                                    nickname: commentUser?.nickname,
+                                    avatar: commentUser?.avatar
+                            ) : null,
+                            comment: comment?.comment,
+                            createdAt: comment?.createdAt,
+                            updatedAt: comment?.updatedAt
+                    )
+
+                }
+
+        )
+
+    }
 
 
 }
