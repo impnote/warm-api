@@ -128,4 +128,4 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 /.idea/
-!build/libs/*.jar
+!build/libs/warm-0.0.1-SNAPSHOT.jar
