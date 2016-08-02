@@ -1,0 +1,44 @@
+config:
+  oss:
+    endpoint: "http://oss-cn-qingdao.aliyuncs.com"
+    accessKeyId: "L33bxhzrpnRBLizQ"
+    accessKeySecret: "6P1vpfW9nGU8FtcGBSYAubfuBLjlf6"
+    bucketName: "donler-warm"
+    urlPrefix: "http://donler-warm.img-cn-qingdao.aliyuncs.com/"
+  app:
+    secretKey: "donler's warm spring api server"
+#    过期时间 七天 毫秒数
+    expiredTime: 604800000
+  yunpian:
+    apiKey: "1120ac9e776bf068778573feebddec43"
+
+
+spring:
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    time-zone: GMT+8
+  profiles:
+    active: development
+
+
+
+multipart:
+  max-file-size: 200MB
+---
+
+spring.profiles: development
+server.port: 1234
+
+
+---
+
+spring.profiles: production
+server.port: 1234
+spring:
+  data:
+    mongodb:
+      database: warm-spring
+      username: warm
+      password: jasonzhang123
+      host: 127.0.0.1
+      port: 27017
