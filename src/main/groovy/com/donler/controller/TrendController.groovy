@@ -523,8 +523,27 @@ class TrendController {
 
     }
 
-    // TODO
-//    def updateTopicById(String topicId, TopicPublishRequestBody body)
+    /**
+     * 更新话题
+     * @param topicId
+     * @param body
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/topic/{topicId}", method = RequestMethod.PUT)
+    @ApiOperation(response = ResponseMsg.class, value = "更新话题", notes = "根据传入的话题ID更新一个话题")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def updateTopicById(@PathVariable String topicId, @Valid @RequestBody TopicPublishRequestBody body) {
+        def topic = topicRepository.findOne(topicId)
+        if (!topic) {
+            throw new NotFoundException("id为: ${topicId}的话题不存在")
+        }
+        topic.title = body?.title
+        topic.content = body?.content
+        def newTopic = topicRepository.save(topic)
+        return ResponseMsg.ok(generateResponseTopicByPersistentTopic(newTopic))
+    }
+
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
