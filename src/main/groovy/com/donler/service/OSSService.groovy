@@ -40,6 +40,11 @@ class OSSService {
         return "$urlPrefix$name.$suffix"
     }
 
+    /**
+     * 使用MultipartFile上传单张图片
+     * @param file
+     * @return
+     */
     String uploadFileToOSS(MultipartFile file) {
         def suffix = file.originalFilename.tokenize('.').last()
         def name = UUID.randomUUID().toString()

@@ -15,6 +15,7 @@ import com.donler.repository.company.CompanyRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
+import com.donler.service.OSSService
 import com.donler.service.TokenService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
@@ -47,6 +48,9 @@ class UserController {
 
     @Autowired
     CompanyRepository companyRepository
+
+    @Autowired
+    OSSService ossService
 
 
 
@@ -133,11 +137,21 @@ class UserController {
         return ResponseMsg.ok(generateResponseUserByPersistentUser(userRepository.save(user)))
     }
 
+
+    @ApiOperation(value = "选择头像上传", notes = "用户更换头像", response = ResponseMsg.class)
     @RequestMapping(path = "/{userId}/avatar", method = RequestMethod.POST)
-    def chooseAvatar(@RequestPart MultipartFile[] files) {
+    def chooseAvatar(@RequestPart MultipartFile[] files, @PathVariable(value = "userId") String userId) {
+        def currentAvatar = ossService.uploadFileToOSS(files?.first())
+        def user = !!userId ? userRepository.findOne(userId) : null
+        if (!user) {
+            throw new NotFoundException("id为 ${userId} 的用户不存在")
+        }
+        user.avatar = currentAvatar
+        return ResponseMsg.ok(generateResponseUserByPersistentUser(userRepository.save(user)))
+
 
     }
-    
+
     /**
      * 根据持久化User生成响应的User
      * @param user
