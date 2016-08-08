@@ -246,7 +246,14 @@ class TrendController {
 
     }
 
-
+    /**
+     * 获取某个动态的评论列表
+     * @param activityId
+     * @param showtimeId
+     * @param voteId
+     * @param topicId
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/comment/by/trend/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取某个动态的评论列表", notes = "根据传入的动态的类型和动态的id来获取该动态的评论列表,其中动态的id必须且只能传入一种和一个")
@@ -319,9 +326,13 @@ class TrendController {
         return newList
     }
 
+    /**
+     * 获取所有瞬间
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
-    @ApiOperation(value = "获取所有活动", notes = "获取所有瞬间信息")
+    @ApiOperation(value = "获取所有瞬间", notes = "获取所有瞬间信息")
     List<ResShowtime> getAllShowtimes() {
         List<Showtime> list = showtimeRepository.findAll()
         def newList = []
@@ -365,7 +376,10 @@ class TrendController {
         return generateResponseActivityByPersistentActivity(activity)
     }
 
-
+    /**
+     * 获取所有活动
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有活动", notes = "获取所有活动信息")
@@ -543,6 +557,23 @@ class TrendController {
         def newTopic = topicRepository.save(topic)
         return ResponseMsg.ok(generateResponseTopicByPersistentTopic(newTopic))
     }
+
+    /**
+     * 获取单个话题
+     * @param topicId
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/topic/{topicId}", method = RequestMethod.GET)
+    @ApiOperation(response = ResponseMsg.class, value = "获取指定话题", notes = "根据传入的话题id获取一个话题")
+    def getTopicById(@PathVariable String topicId) {
+        def topic = topicRepository.findOne(topicId)
+        if (!topic) {
+            throw new NotFoundException("id为: ${topicId}的话题不存在")
+        }
+        return generateResponseTopicByPersistentTopic(topic)
+    }
+
 
 
     /**
