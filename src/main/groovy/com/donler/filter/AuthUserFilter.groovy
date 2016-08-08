@@ -40,7 +40,8 @@ class AuthUserFilter implements Filter {
          */
         def needAuths = [
                 ~/\/trend.*/,
-                ~/\/team.*/
+                ~/\/team.*/,
+                ~/\/user\/profile/
         ]
 
         /**
@@ -48,17 +49,19 @@ class AuthUserFilter implements Filter {
          */
         def needAuthsOfGetMethod = [
                 ~/\/team(.*)search/,
-                ~/\/trend(.*)search/
+                ~/\/trend(.*)search/,
+                ~/\/user\/profile/
         ]
 
 
         /**
          *  校验规则:
          *  1.get方法中需要认证的url需要认证,
-         *  2.非get方法中需要认证的url不需要认证
+         *  2.非get方法中不需要认证的url不需要认证
          *  3.非get请求中所有需要认证的url需要认证
          */
-        if (( req.method.toUpperCase() != 'GET' || needAuthsOfGetMethod.any { req.requestURI.matches(it)} ) && needAuths.any { req.requestURI.matches(it)}) {
+        if (( req.method.toUpperCase() != 'GET' || needAuthsOfGetMethod.any { req.requestURI.matches(it)} )
+                && needAuths.any { req.requestURI.matches(it)}) {
 
 
             def tokenStr = req.getHeader("x-token")
@@ -71,7 +74,10 @@ class AuthUserFilter implements Filter {
             }
             def token = tokenRepository.findByUserId(userId) as Token
             println(token)
-            if (new Date().before(token.expiredTime)) {
+            if (!!token && new Date().before(token.expiredTime)) {
+                if (!token?.userId) {
+                    throw new UnAuthException("token不正确")
+                }
                 req.setAttribute("user", userRepository.findOne(token?.userId))
             } else {
                 throw new UnAuthException("token已过期,请重新登录")
