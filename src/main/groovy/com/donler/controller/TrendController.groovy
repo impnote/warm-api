@@ -12,6 +12,7 @@ import com.donler.model.persistent.user.User
 import com.donler.model.request.trend.ActivityPublishRequestBody
 import com.donler.model.request.trend.ShowtimePublishRequestBody
 import com.donler.model.request.trend.TopicPublishRequestBody
+import com.donler.model.request.trend.TrendTypeRequestBody
 import com.donler.model.request.trend.TrendCommentPublishRequestBody
 import com.donler.model.request.trend.VotePublishRequestBody
 import com.donler.model.response.Activity as ResActivity
@@ -180,26 +181,16 @@ class TrendController {
 
 
     // TODO 其余点赞
-    @RequestMapping(value = "/approve/to/trend", method = RequestMethod.GET)
+    @RequestMapping(value = "/approve/to/trend", method = RequestMethod.POST)
     @ApiOperation(response = ResponseMsg.class, value = "点赞", notes = "为指定的动态点赞,四个动态的id只能传入一个")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def approveToTrend(
-            @RequestParam(required = false)
-            @ApiParam(value = "活动的id")
-                    String activityId,
-            @RequestParam(required = false)
-            @ApiParam(value = "投票的id")
-                    String voteId,
-            @ApiParam(value = "瞬间的id")
-            @RequestParam(required = false)
-                    String showtimeId,
-            @ApiParam(value = "话题的id")
-            @RequestParam(required = false)
-                    String topicId,
+            @RequestBody
+            TrendTypeRequestBody body,
             HttpServletRequest req
     ) {
         def user = req.getAttribute("user") as User
-        def querys = [activityId: activityId, voteId: voteId, showtimeId: showtimeId, topicId: topicId]
+        def querys = [activityId: body?.activityId, voteId: body?.voteId, showtimeId: body?.showtimeId, topicId: body?.topicId]
         def newQuerys = [:]
         querys.each { key, value ->
             println("value${value}")
@@ -254,25 +245,10 @@ class TrendController {
     def commentToTrend(
             @Valid @RequestBody
                     TrendCommentPublishRequestBody body,
-            @RequestParam(required = false)
-            @ApiParam(value = "活动的id")
-                    String activityId,
-            @RequestParam(required = false)
-            @ApiParam(value = "投票的id")
-                    String voteId,
-            @ApiParam(value = "瞬间的id")
-            @RequestParam(required = false)
-                    String showtimeId,
-            @ApiParam(value = "话题的id")
-            @RequestParam(required = false)
-                    String topicId,
-            @ApiParam(value = "要回复的评论的id")
-            @RequestParam(required = false)
-                    String replyToCommentId,
 
             HttpServletRequest req) {
         def user = req.getAttribute('user') as User
-        def querys = [activityId: activityId, voteId: voteId, showtimeId: showtimeId, topicId: topicId]
+        def querys = [activityId: body?.activityId, voteId: body?.voteId, showtimeId: body?.showtimeId, topicId: body?.topicId]
         def newQuerys = [:]
         querys.each { key, value ->
             println("value${value}")
@@ -290,7 +266,7 @@ class TrendController {
                         break;
                     case 'showtimeId':
                         def showtime = showtimeRepository.findOne(value)
-                        def comment = !!replyToCommentId ? commentArrItemRepository.findOne(replyToCommentId) : null
+                        def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
 
                         if (!!showtime) {
                             def item = commentArrItemRepository.save(new CommentArrItem(
@@ -343,7 +319,8 @@ class TrendController {
                     String voteId,
             @ApiParam("话题id")
             @RequestParam(required = false)
-                    String topicId) {
+                    String topicId
+    ) {
         def querys = [activityId: activityId, showtimeId: showtimeId, voteId: voteId, topicId: topicId]
         def newQuerys = [:]
         querys.each { key, value ->
