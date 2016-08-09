@@ -39,18 +39,19 @@ class AuthUserFilter implements Filter {
          * 需要验证的url数组
          */
         def needAuths = [
-                ~/\/trend.*/,
-                ~/\/team.*/,
-                ~/\/user\/profile/
+                ~/\/trend.*/, // 动态中的所有路由
+                ~/\/team.*/, // 群组中的所有路由
+                ~/\/user\/profile/ // 获取个人资料
         ]
 
         /**
          * get方法中需要验证的url,比如某些search
          */
         def needAuthsOfGetMethod = [
-                ~/\/team(.*)search/,
-                ~/\/trend(.*)search/,
-                ~/\/user\/profile/
+                ~/\/team(.*)search/, // 群组中的所有的搜索的get请求
+                ~/\/trend(.*)search/, // 动态的中的所有搜索的get请求
+                ~/\/user\/profile/, // 获取个人资料的get请求
+                ~/\/trend\/approve\/to\/trend/ // 点赞的get请求
         ]
 
 

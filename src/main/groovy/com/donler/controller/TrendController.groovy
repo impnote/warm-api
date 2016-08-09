@@ -177,14 +177,79 @@ class TrendController {
         return generateResponseShowtimeByPersistentShowtime(showtime)
     }
 
-    // TODO
+
+
+    // TODO 其余点赞
+    @RequestMapping(value = "/approve/to/trend", method = RequestMethod.GET)
+    @ApiOperation(response = ResponseMsg.class, value = "点赞", notes = "为指定的动态点赞,四个动态的id只能传入一个")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def approveToTrend(
+            @RequestParam(required = false)
+            @ApiParam(value = "活动的id")
+                    String activityId,
+            @RequestParam(required = false)
+            @ApiParam(value = "投票的id")
+                    String voteId,
+            @ApiParam(value = "瞬间的id")
+            @RequestParam(required = false)
+                    String showtimeId,
+            @ApiParam(value = "话题的id")
+            @RequestParam(required = false)
+                    String topicId,
+            HttpServletRequest req
+    ) {
+        def user = req.getAttribute("user") as User
+        def querys = [activityId: activityId, voteId: voteId, showtimeId: showtimeId, topicId: topicId]
+        def newQuerys = [:]
+        querys.each { key, value ->
+            println("value${value}")
+            if (value != null) {
+                newQuerys.put(key, value)
+            }
+        }
+        def result = ''
+        if (newQuerys.size() == 1) {
+            querys.each { key, value ->
+                switch (key) {
+                    case 'activityId':
+
+                        break;
+                    case 'showtimeId':
+                        def showtime = showtimeRepository.findOne(value)
+                        def approves = showtime?.approves ?: []
+                        approves.each {
+                            def approve = approveArrItemRepository.findOne(it)
+                            if (approve?.userId == user?.id) {
+                                throw new BadRequestException("您已经点过赞了,不能再点赞~")
+                            }
+                        }
+                        def approve = !!showtime ? approveArrItemRepository.save(new ApproveArrItem(
+                                userId: user?.id,
+                                createdAt: new Date(),
+                                updatedAt: new Date()
+                        )) : null
+                        approves.add(approve?.id)
+                        showtime.approves = approves
+                        result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                        break;
+                    default: break;
+                }
+            }
+        } else {
+            throw new BadRequestException("只能传入一种动态id")
+        }
+
+        return ResponseMsg.ok(result)
+    }
+
+    // TODO 其余评论
     /**
      * 发表评论
      * @param body
      */
     @ResponseBody
     @RequestMapping(value = "/comment/to/trend", method = RequestMethod.POST)
-    @ApiOperation(response = ResponseMsg.class, value = "发表评论", notes = "为指定的动态发表评论,四个动态的id只能传一个,评论的id可传可不传")
+    @ApiOperation(response = ResponseMsg.class, value = "发表评论", notes = "为指定的动态发表评论,四个动态的id只能传一个,replyToCommentId可不传,不传为发表评论,传入则为为指定评论进行回复")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def commentToTrend(
             @Valid @RequestBody
@@ -251,6 +316,9 @@ class TrendController {
         return ResponseMsg.ok(result)
 
     }
+
+
+    // TODO 仿造获取某个动态的评论列表接口写获取某个动态的点赞数组接口
 
     /**
      * 获取某个动态的评论列表
@@ -592,7 +660,7 @@ class TrendController {
         User showtimeAuthor = userRepository.findOne(showtime?.authorId)
         def activityAuthor = !!activity?.authorId ? userRepository.findOne(activity?.authorId) : null
         Team showtimeTeam = !!showtime?.teamId ? teamRepository.findOne(showtime?.teamId) : null
-        Company showtimeCompany = companyRepository.findOne(showtime?.companyId)
+        Company showtimeCompany = !!showtime?.companyId ? companyRepository.findOne(showtime?.companyId) : null
         return new ResShowtime(
                 id: showtime?.id,
                 content: showtime?.content,
