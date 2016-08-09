@@ -184,7 +184,7 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/comment/to/trend", method = RequestMethod.POST)
-    @ApiOperation(response = ResponseMsg.class, value = "发表评论", notes = "为指定的动态发表评论")
+    @ApiOperation(response = ResponseMsg.class, value = "发表评论", notes = "为指定的动态发表评论,四个动态的id只能传一个,评论的id可传可不传")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def commentToTrend(
             @Valid @RequestBody
@@ -201,8 +201,11 @@ class TrendController {
             @ApiParam(value = "话题的id")
             @RequestParam(required = false)
                     String topicId,
-            HttpServletRequest req) {
+            @ApiParam(value = "要回复的评论的id")
+            @RequestParam(required = false)
+                    String replyToCommentId,
 
+            HttpServletRequest req) {
         def user = req.getAttribute('user') as User
         def querys = [activityId: activityId, voteId: voteId, showtimeId: showtimeId, topicId: topicId]
         def newQuerys = [:]
@@ -222,13 +225,16 @@ class TrendController {
                         break;
                     case 'showtimeId':
                         def showtime = showtimeRepository.findOne(value)
+                        def comment = !!replyToCommentId ? commentArrItemRepository.findOne(replyToCommentId) : null
+
                         if (!!showtime) {
                             def item = commentArrItemRepository.save(new CommentArrItem(
                                     userId: user?.id,
                                     comment: body?.comment,
                                     createdAt: new Date(),
-                                    updatedAt: new Date()
-                            ))
+                                    updatedAt: new Date(),
+                                    replyToCommentId: !!comment ? comment?.id :null
+                             ))
                             !showtime.comments ? showtime.comments = [item?.id] : showtime.comments.push(item?.id)
                             result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
                         } else {
@@ -635,19 +641,8 @@ class TrendController {
                     )
                 },
                 comments: showtime?.comments?.collect {
-                    def comment = commentArrItemRepository.findOne(it)
-                    def user = userRepository.findOne(comment?.userId)
-                    return new ResCommentArrItem(
-                            id: comment?.id,
-                            user: new SimpleUserModel(
-                                    id: user?.id,
-                                    nickname: user?.nickname,
-                                    avatar: user?.avatar
-                            ),
-                            comment: comment?.comment,
-                            createdAt: comment?.createdAt,
-                            updatedAt: comment?.updatedAt
-                    )
+                    def comment = !!it ? commentArrItemRepository.findOne(it) : null
+                    return !!comment ? generateResponseCommentArrItemByPersistentCommentArrItem(comment) : null
                 }
         )
     }
@@ -790,6 +785,8 @@ class TrendController {
      */
     ResCommentArrItem generateResponseCommentArrItemByPersistentCommentArrItem(CommentArrItem commentArrItem) {
         def user = !!commentArrItem?.userId ? userRepository.findOne(commentArrItem?.userId) : null
+        def comment = !!commentArrItem?.replyToCommentId ? commentArrItemRepository.findOne(commentArrItem?.replyToCommentId) : null
+        def replyToCommentAuthor = !!comment && !!comment?.userId ? userRepository.findOne(comment?.userId) : null
         return new ResCommentArrItem(
                 id: commentArrItem?.id,
                 comment: commentArrItem?.comment,
@@ -798,10 +795,17 @@ class TrendController {
                         nickname: user?.nickname,
                         avatar: user?.avatar
                 ) : null,
+                replyToCommentAuthor: !!replyToCommentAuthor ? new SimpleUserModel(
+                        id: replyToCommentAuthor?.id,
+                        nickname: replyToCommentAuthor?.nickname,
+                        avatar: replyToCommentAuthor?.avatar
+                ) : null,
                 updatedAt: commentArrItem?.updatedAt,
                 createdAt: commentArrItem?.createdAt
         )
     }
+
+
 
     /**
      * 根据持久化话题模型生成res话题
