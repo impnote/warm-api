@@ -17,6 +17,7 @@ import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
 import com.donler.service.OSSService
 import com.donler.service.TokenService
+import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
@@ -79,27 +80,28 @@ class UserController {
 
     @ApiOperation(value = "注册", notes = "根据传入的信息来进行注册,companyId非必填项,注册时可以先不指定" , response = User.class)
     @RequestMapping(path = "/register", method = RequestMethod.POST)
-    def register(@Valid @RequestBody UserRegisterRequestModel body) {
-
-        def company = companyRepository.findOne(body?.companyId)
-
-        if (userRepository.findByUsername(body?.username)) {
-            throw new DatabaseDuplicateException("用户名为${body?.username}的用户已经存在")
-        } else if (userRepository.findByEmail(body?.email)) {
-            throw new DatabaseDuplicateException("邮箱为${body?.email}的用户已经存在")
-        } else if (userRepository.findByPhone(body?.phone)) {
-            throw new DatabaseDuplicateException("手机号码为${body?.phone}的用户已经存在")
+    def register(@RequestPart String body, @RequestPart MultipartFile[] files) {
+        UserRegisterRequestModel newBody = ValidationUtil.validateModelAttribute(UserRegisterRequestModel.class,body)
+        def company = !!newBody?.companyId ? companyRepository.findOne(newBody?.companyId) : null
+        def currentAvatar = ossService.uploadFileToOSS(files?.first())
+        if (userRepository.findByUsername(newBody?.username)) {
+            throw new DatabaseDuplicateException("用户名为${newBody?.username}的用户已经存在")
+        } else if (userRepository.findByEmail(newBody?.email)) {
+            throw new DatabaseDuplicateException("邮箱为${newBody?.email}的用户已经存在")
+        } else if (userRepository.findByPhone(newBody?.phone)) {
+            throw new DatabaseDuplicateException("手机号码为${newBody?.phone}的用户已经存在")
         } else {
             return userRepository.save(new User(
-                    nickname: body.nickname ?: "匿名",
-                    username: body?.username,
-                    password: MD5Util.md5Encode(body?.password),
-                    phone: body?.phone,
-                    email: body?.email,
+                    nickname: newBody.nickname ?: "匿名",
+                    gender: newBody?.gender,
+                    avatar: currentAvatar,
+                    username: newBody?.username,
+                    password: MD5Util.md5Encode(newBody?.password),
+                    phone: newBody?.phone,
+                    email: newBody?.email,
                     companyId: !!company ? company?.id : null
             ))
         }
-
     }
 
     /**

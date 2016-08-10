@@ -15,6 +15,8 @@ class User {
     String id
     @ApiModelProperty("昵称")
     String nickname // 昵称
+    @ApiModelProperty("性别")
+    String gender //性别
     @ApiModelProperty("头像url")
     String avatar // 头像
     @ApiModelProperty(notes = "职位")
