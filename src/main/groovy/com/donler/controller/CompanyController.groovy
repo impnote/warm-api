@@ -1,7 +1,6 @@
 package com.donler.controller
 
 import com.donler.exception.AttrNotValidException
-import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.persistent.company.Company
 import com.donler.model.request.company.CompanyCreateRequestBody
 import com.donler.model.response.Company as ResCompany
@@ -15,17 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-
-import java.nio.file.Path
-
 /**
  * Created by jason on 5/27/16.
  */
@@ -50,7 +40,7 @@ class CompanyController {
 
         CompanyCreateRequestBody company = ValidationUtil.validateModelAttribute(CompanyCreateRequestBody.class, body)
 
-        def count = companyRepository.countByName(company?.name)
+        def count = companyRepository.countByEmailSuffix(company?.emailSuffix)
         if (count > 0) {
             throw new AttrNotValidException("该公司已经存在")
         }

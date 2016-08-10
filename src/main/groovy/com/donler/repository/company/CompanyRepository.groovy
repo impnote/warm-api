@@ -13,4 +13,8 @@ interface CompanyRepository extends MongoRepository<Company, String> {
 
     Long countByName(String name)
 
+    Long countByEmailSuffix(String emailSuffix)
+
+
+
 }
