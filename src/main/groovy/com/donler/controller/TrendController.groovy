@@ -9,12 +9,7 @@ import com.donler.model.persistent.company.Company
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.trend.*
 import com.donler.model.persistent.user.User
-import com.donler.model.request.trend.ActivityPublishRequestBody
-import com.donler.model.request.trend.ShowtimePublishRequestBody
-import com.donler.model.request.trend.TopicPublishRequestBody
-import com.donler.model.request.trend.TrendTypeRequestBody
-import com.donler.model.request.trend.TrendCommentPublishRequestBody
-import com.donler.model.request.trend.VotePublishRequestBody
+import com.donler.model.request.trend.*
 import com.donler.model.response.Activity as ResActivity
 import com.donler.model.response.ApproveArrItem as ResApproveArrItem
 import com.donler.model.response.CommentArrItem as ResCommentArrItem
@@ -42,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
-
 /**
  * Created by jason on 5/25/16.
  */
@@ -180,9 +174,16 @@ class TrendController {
 
 
 
+
     // TODO 其余点赞
+    /**
+     * 点赞功能
+     * @param body
+     * @param req
+     * @return
+     */
     @RequestMapping(value = "/approve/to/trend", method = RequestMethod.POST)
-    @ApiOperation(response = ResponseMsg.class, value = "点赞", notes = "为指定的动态点赞,四个动态的id只能传入一个")
+    @ApiOperation(response = ResponseMsg.class, value = "点赞", notes = "为指定的动态点赞,四个动态的id只能传入一个,如果该用户已经点过赞,则为取消点赞")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def approveToTrend(
             @RequestBody
@@ -203,25 +204,36 @@ class TrendController {
             querys.each { key, value ->
                 switch (key) {
                     case 'activityId':
-
                         break;
                     case 'showtimeId':
                         def showtime = showtimeRepository.findOne(value)
+                        if (!showtime) {
+                            throw new NotFoundException("瞬间id不存在")
+                        }
                         def approves = showtime?.approves ?: []
+                        def needDeleteApproveId = ''  //记录需要取消点赞的approveId
                         approves.each {
                             def approve = approveArrItemRepository.findOne(it)
                             if (approve?.userId == user?.id) {
-                                throw new BadRequestException("您已经点过赞了,不能再点赞~")
+                                needDeleteApproveId = approve?.id
                             }
                         }
-                        def approve = !!showtime ? approveArrItemRepository.save(new ApproveArrItem(
-                                userId: user?.id,
-                                createdAt: new Date(),
-                                updatedAt: new Date()
-                        )) : null
-                        approves.add(approve?.id)
-                        showtime.approves = approves
-                        result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                        if (!needDeleteApproveId) {
+                            def approve = !!showtime ? approveArrItemRepository.save(new ApproveArrItem(
+                                    userId: user?.id,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date()
+                            )) : null
+                            approves.add(approve?.id)
+                            showtime.approves = approves
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+
+                        } else {
+                            approves.remove(needDeleteApproveId)
+                            approveArrItemRepository.delete(needDeleteApproveId)
+                            showtime.approves = approves
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                        }
                         break;
                     default: break;
                 }
