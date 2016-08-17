@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -170,6 +171,41 @@ class TrendController {
             throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
         }
         return generateResponseShowtimeByPersistentShowtime(showtime)
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
+    @ApiOperation(value = "分片加载瞬间",  notes = "获取指定瞬间之前的瞬间,如果需要查询的瞬间的id没有传或者不存在,则返回最新的n条记录,limit为限制本次返回的记录条数")
+    Page<ResShowtime> listShowtimeByLastItemId(
+            @RequestParam(required = false) String showtimeId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit) {
+        def perShowtime = !!showtimeId ? showtimeRepository.findOne(showtimeId) : null
+        def list
+        if (!perShowtime) {
+            // 为空则返回最新的n条
+            list = showtimeRepository.findAll(
+                    new PageRequest(
+                            page ?: 0,
+                            limit ?: 10,
+                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+
+
+        } else {
+            // 不为空返回指定瞬间的前n条记录
+            list = showtimeRepository.findByUpdatedAtBefore(
+                    perShowtime?.updatedAt,
+                    new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+        }
+        return list.map(new Converter() {
+            @Override
+            Object convert(Object source) {
+                return generateResponseShowtimeByPersistentShowtime(source as Showtime)
+            }
+        })
     }
 
 
@@ -394,7 +430,7 @@ class TrendController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/showtime/list/all", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有瞬间", notes = "获取所有瞬间信息")
     List<ResShowtime> getAllShowtimes() {
         List<Showtime> list = showtimeRepository.findAll()
