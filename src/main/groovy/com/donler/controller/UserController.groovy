@@ -78,7 +78,7 @@ class UserController {
     }
 
 
-    @ApiOperation(value = "注册", notes = "根据传入的信息来进行注册,companyId非必填项,注册时可以先不指定" , response = User.class)
+    @ApiOperation(value = "注册", notes = "根据传入的信息来进行注册,companyId非必填项,注册时可以先不指定, body example: {\"username\": \"jasonzhang\", \"password\": \"leftjs\", \"gender\": \"男\", \"nickname\": \"小张\"}" , response = User.class)
     @RequestMapping(path = "/register", method = RequestMethod.POST)
     def register(@RequestPart String body, @RequestPart MultipartFile[] files) {
         UserRegisterRequestModel newBody = ValidationUtil.validateModelAttribute(UserRegisterRequestModel.class,body)
