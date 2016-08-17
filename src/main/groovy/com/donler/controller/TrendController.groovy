@@ -474,10 +474,10 @@ class TrendController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value = "/vote/publish", method = RequestMethod.POST)
+    @RequestMapping(value = "/vote/publish", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
     @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票,teamId不传为默认全体可见 body example: {\"content\":\"小张我帅不帅\",\"options\":[\"帅\",\"不帅\"],\"teamId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResVote publishVote(@RequestPart String body, @RequestPart MultipartFile[] files, HttpServletRequest req) {
+    ResVote publishVote(@RequestPart String body, @RequestPart(required = false) MultipartFile[] files, HttpServletRequest req) {
 
         def currentUser = req.getAttribute("user") as User
         def company = !!currentUser?.companyId ? companyRepository.findOne(currentUser?.companyId) : null
@@ -485,7 +485,7 @@ class TrendController {
         def team = !!newBody?.teamId ? teamRepository.findOne(newBody?.teamId) : null
 
         def savedVote = voteRepository.save(new Vote(
-                image: ossService.uploadFileToOSS(files?.first()),
+                image: !!files && files.length >0 ? ossService.uploadFileToOSS(files?.first()) : null,
                 teamId: !!team ? team?.id : null,
                 companyId: !!company ? company?.id : null,
                 content: newBody?.content,

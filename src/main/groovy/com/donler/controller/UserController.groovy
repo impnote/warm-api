@@ -153,6 +153,15 @@ class UserController {
 
 
     }
+//TODO 修改个人信息
+//    @RequestMapping(path = "/profile", method = RequestMethod.PUT)
+//    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+//    def modProfile(@Valid @RequestBody UserProfileModifyRequestModel body, HttpServletRequest req) {
+//        def user = req.getAttribute("user") as User
+//
+//
+//        return body
+//    }
 
     /**
      * 根据持久化User生成响应的User
@@ -164,6 +173,10 @@ class UserController {
         return new ResUser(
                 id: user?.id,
                 nickname: user?.nickname,
+                realname: user?.realname,
+                constellation: user?.constellation,
+                birthday: user?.birthday,
+                gender: user?.gender,
                 avatar: user?.avatar,
                 job: user?.job,
                 username: user?.username,
