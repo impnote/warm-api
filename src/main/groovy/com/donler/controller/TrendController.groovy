@@ -173,13 +173,28 @@ class TrendController {
         return generateResponseShowtimeByPersistentShowtime(showtime)
     }
 
+    /**
+     * 根据指定id分页获取该瞬间之前的瞬间
+     * @param showtimeId
+     * @param page
+     * @param limit
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
     @ApiOperation(value = "分片加载瞬间",  notes = "获取指定瞬间之前的瞬间,如果需要查询的瞬间的id没有传或者不存在,则返回最新的n条记录,limit为限制本次返回的记录条数")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     Page<ResShowtime> listShowtimeByLastItemId(
-            @RequestParam(required = false) String showtimeId,
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer limit) {
+            @RequestParam(required = false)
+                    @ApiParam("指定瞬间的id")
+                    String showtimeId,
+            @RequestParam(required = false)
+                    @ApiParam("页数,默认第0页")
+                    Integer page,
+            @RequestParam(required = false)
+                    @ApiParam("每页条数,默认第10条")
+                    Integer limit , HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
         def perShowtime = !!showtimeId ? showtimeRepository.findOne(showtimeId) : null
         def list
         if (!perShowtime) {
@@ -203,7 +218,7 @@ class TrendController {
         return list.map(new Converter() {
             @Override
             Object convert(Object source) {
-                return generateResponseShowtimeByPersistentShowtime(source as Showtime)
+                return generateResponseShowtimeByPersistentShowtime(source as Showtime, user)
             }
         })
     }
@@ -736,10 +751,27 @@ class TrendController {
                 comments: showtime?.comments?.collect {
                     def comment = !!it ? commentArrItemRepository.findOne(it) : null
                     return !!comment ? generateResponseCommentArrItemByPersistentCommentArrItem(comment) : null
-                }
+                },
         )
     }
 
+    /**
+     * 增加approved字段(判断当前用户是否点赞)
+     * @param showtime
+     * @param user
+     * @return
+     */
+    ResShowtime generateResponseShowtimeByPersistentShowtime(Showtime showtime, User user) {
+        def res = generateResponseShowtimeByPersistentShowtime(showtime)
+        res.approved = false
+        for (def approve : res.approves) {
+            if (approve?.user?.id == user?.id) {
+                res.approved = true
+                break
+            }
+        }
+        return res
+    }
     /**
      *
      * 根据持久化活动生成res活动

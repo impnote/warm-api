@@ -1,11 +1,6 @@
 package com.donler.model.response
 
-import com.donler.model.CreateAndModifyTimestamp
-import com.donler.model.ImageUrlUnit
-import com.donler.model.SimpleActivityModel
-import com.donler.model.SimpleCompanyModel
-import com.donler.model.SimpleTeamModel
-import com.donler.model.SimpleUserModel
+import com.donler.model.*
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 /**
@@ -38,4 +33,6 @@ class Showtime {
     Date createdAt // 创建时间
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
+    @ApiModelProperty("当前用户是否点赞")
+    Boolean approved
 }

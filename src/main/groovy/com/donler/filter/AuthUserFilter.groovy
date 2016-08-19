@@ -51,6 +51,7 @@ class AuthUserFilter implements Filter {
                 ~/\/team(.*)search/, // 群组中的所有的搜索的get请求
                 ~/\/trend(.*)search/, // 动态的中的所有搜索的get请求
                 ~/\/user\/profile/, // 获取个人资料的get请求
+                ~/\/trend\/showtime\/list/ //根据指定id分页获取瞬间之前的瞬间
         ]
 
 
