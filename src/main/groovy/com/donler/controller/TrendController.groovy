@@ -199,13 +199,15 @@ class TrendController {
         def list
         if (!perShowtime) {
             // 为空则返回最新的n条
-            list = showtimeRepository.findAll(
-                    new PageRequest(
-                            page ?: 0,
-                            limit ?: 10,
-                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
-
-
+//            list = showtimeRepository.findAll(
+//                    new PageRequest(
+//                            page ?: 0,
+//                            limit ?: 10,
+//                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+            list = showtimeRepository.findByCompanyId(user.companyId,new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
         } else {
             // 不为空返回指定瞬间的前n条记录
             list = showtimeRepository.findByUpdatedAtBefore(
@@ -687,6 +689,24 @@ class TrendController {
         }
         return generateResponseTopicByPersistentTopic(topic)
     }
+
+    /**
+     * 获取所有话题
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/topic/list/all", method = RequestMethod.GET)
+    @ApiOperation(value = "获取所有话题", notes = "获取所有话题信息")
+    List<ResTopic> getAllTopics() {
+        List<Topic> list = topicRepository.findAll()
+        def newList = []
+        list.each {
+            newList << generateResponseTopicByPersistentTopic(it)
+        }
+        return newList
+    }
+
+
 
 
 

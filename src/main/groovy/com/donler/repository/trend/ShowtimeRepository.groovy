@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository
 //@RepositoryRestResource(collectionResourceRel = "showtime", path = "showtime")
 interface ShowtimeRepository extends MongoRepository<Showtime, String> {
     List<Showtime> findByActivityId(def id)
-
+    Page<Showtime> findByCompanyId(def id, Pageable pageable)
     Page<Showtime> findByUpdatedAtBefore(Date updatedAt, Pageable pageable)
 }
