@@ -595,6 +595,40 @@ class TrendController {
     }
 
     /**
+     * 投票操作
+     * @param voteOptionInfoId
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/vote/voteOption/{voteOptionInfoId}", method = RequestMethod.POST)
+    @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def voteOperation(@PathVariable("voteOptionInfoId")String voteOptionInfoId, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def voteOption = voteOptionInfoRepository.findOne(voteOptionInfoId)
+        if (!voteOption) {
+            throw new NotFoundException("id为:${voteOptionInfoId}的投票不存在")
+        }
+        def votedUserIds =voteOption?.votedUserIds ?:[]
+//        votedUserIds.each {
+//            if (user.id == it) {
+//                return ResponseMsg.ok(["errMsg":"已经投过票","errNo":404])
+//            }
+//        }
+        for (int i=0;i<votedUserIds.size();i++) {
+            def votedUserId = votedUserIds[i]
+            if (user.id == votedUserId) {
+                return  ResponseMsg.ok(["errMsg":"已经投过票","errNo":404])
+            }
+
+        }
+        votedUserIds.add(user?.id)
+        voteOption.votedUserIds = votedUserIds
+        return ResponseMsg.ok(generateResponseVoteOptionInfoByPersistentVoteOptionInfo(voteOptionInfoRepository.save(voteOption)))
+    }
+
+
+    /**
      * 发布话题
      * @param body
      * @param files
@@ -893,7 +927,8 @@ class TrendController {
                                         nickname: votedUser?.nickname,
                                         avatar: votedUser?.avatar
                                 )
-                            }
+                            },
+                            count: voteOptionInfo?.votedUserIds?.size()
                     )
                 },
                 comments: vote?.comments?.collect {
@@ -920,6 +955,22 @@ class TrendController {
                 updatedAt: vote?.updatedAt
 
 
+        )
+    }
+
+    ResVoteOptionInfo generateResponseVoteOptionInfoByPersistentVoteOptionInfo(VoteOptionInfo voteOptionInfo) {
+        return new ResVoteOptionInfo(
+                id: voteOptionInfo?.id,
+                option: voteOptionInfo?.option,
+                votedUsers: voteOptionInfo?.votedUserIds?.collect {
+                    User votedUser = userRepository.findOne(it)
+                    return new SimpleUserModel(
+                            id: votedUser?.id,
+                            nickname: votedUser?.nickname,
+                            avatar: votedUser?.avatar
+                    )
+                },
+                count: voteOptionInfo?.votedUserIds?.size()
         )
     }
 
@@ -1003,6 +1054,8 @@ class TrendController {
         )
 
     }
+
+
 
 
 }

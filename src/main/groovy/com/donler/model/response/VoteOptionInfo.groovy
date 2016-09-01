@@ -13,4 +13,6 @@ class VoteOptionInfo {
     String option
     @ApiModelProperty("已投用户ids")
     List<SimpleUserModel> votedUsers
+    @ApiModelProperty("投该选项的人数")
+    int count
 }
