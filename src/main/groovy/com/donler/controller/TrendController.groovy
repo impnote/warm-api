@@ -324,7 +324,7 @@ class TrendController {
 
         def result = ''
         if (newQuerys.size() == 1) {
-            querys.each { key, value ->
+            newQuerys.each { key, value ->
                 switch (key) {
                     case 'activityId':
 
@@ -353,7 +353,6 @@ class TrendController {
         } else {
             throw new BadRequestException("只能传入一种动态id")
         }
-
         return ResponseMsg.ok(result)
 
     }
@@ -593,6 +592,47 @@ class TrendController {
         })
 
     }
+//TODO 投票list
+
+    @ResponseBody
+    @RequestMapping(value = "/vote/list", method = RequestMethod.GET)
+    @ApiOperation(value = "获取投票列表", notes = "根据用户传入的查询参数进行搜索,如果voteId为空,则默认返回该用户所在公司的所有投票")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    Page<ResVote> getVoteByLastItemId(
+            @RequestParam(required = false)
+                    @ApiParam("指定投票的id")
+            String voteId,
+            @RequestParam(required = false)
+                    @ApiParam("页数,默认第0页")
+            Integer page,
+            @RequestParam(required = false)
+                    @ApiParam("每页条数,默认10条")
+            Integer limit, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def perVote = !!voteId ? voteRepository.findOne(voteId) : null
+        def list
+        if (!perVote) {
+            // 为空则返回最新的n条
+            list = voteRepository.findByCompanyId(user?.companyId,new PageRequest(
+                    page ?:0,
+                    limit ?:10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+        }else {
+            //不为空返回指定瞬间的前n条记录
+            list = voteRepository.findByUpdatedAtBefore(
+                    perVote?.updatedAt,
+                    new PageRequest(
+                            page ?: 0,
+                            limit ?: 10,
+                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updateAt")))))
+        }
+        return list.map(new Converter() {
+            @Override
+            Object convert(Object source) {
+                return generateResponseVoteByPersistentVote(source as Vote)
+            }
+        })
+    }
 
     /**
      * 投票操作
@@ -600,31 +640,38 @@ class TrendController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/vote/voteOption/{voteOptionInfoId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/vote/voteOption/{voteId}/{voteOptionInfoId}", method = RequestMethod.POST)
     @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def voteOperation(@PathVariable("voteOptionInfoId")String voteOptionInfoId, HttpServletRequest req) {
+    def voteOperation(@PathVariable("voteId")String voteId, @PathVariable("voteOptionInfoId") String voteOptionInfoId, HttpServletRequest req) {
         def user = req.getAttribute("user") as User
+        def vote = voteRepository.findOne(voteId)
+        //判断投票是否投过
+        if (vote?.isVoted) {
+            return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
+        }
         def voteOption = voteOptionInfoRepository.findOne(voteOptionInfoId)
         if (!voteOption) {
             throw new NotFoundException("id为:${voteOptionInfoId}的投票不存在")
         }
-        def votedUserIds =voteOption?.votedUserIds ?:[]
+        def votedUserIds = voteOption?.votedUserIds ?: []
 //        votedUserIds.each {
 //            if (user.id == it) {
 //                return ResponseMsg.ok(["errMsg":"已经投过票","errNo":404])
 //            }
 //        }
-        for (int i=0;i<votedUserIds.size();i++) {
+        for (int i = 0; i < votedUserIds.size(); i++) {
             def votedUserId = votedUserIds[i]
             if (user.id == votedUserId) {
-                return  ResponseMsg.ok(["errMsg":"已经投过票","errNo":404])
+                return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
             }
-
         }
         votedUserIds.add(user?.id)
         voteOption.votedUserIds = votedUserIds
-        return ResponseMsg.ok(generateResponseVoteOptionInfoByPersistentVoteOptionInfo(voteOptionInfoRepository.save(voteOption)))
+        voteOptionInfoRepository.save(voteOption)
+        vote.isVoted = true
+        voteRepository.save(vote)
+        return ResponseMsg.ok(generateResponseVoteByPersistentVote(vote))
     }
 
 
@@ -952,11 +999,13 @@ class TrendController {
                         avatar: user?.avatar
                 ) : null,
                 createdAt: vote?.createdAt,
-                updatedAt: vote?.updatedAt
+                updatedAt: vote?.updatedAt,
+                isVoted: vote?.isVoted
 
 
         )
     }
+
 
     ResVoteOptionInfo generateResponseVoteOptionInfoByPersistentVoteOptionInfo(VoteOptionInfo voteOptionInfo) {
         return new ResVoteOptionInfo(

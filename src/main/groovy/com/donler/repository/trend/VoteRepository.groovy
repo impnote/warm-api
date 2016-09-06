@@ -14,4 +14,5 @@ interface VoteRepository extends MongoRepository<Vote, String> {
 
     Page<Vote> findByTeamId(String teamId, Pageable pageable)
 
+    Page<Vote> findByUpdatedAtBefore(Date updatedAt, Pageable pageable)
 }

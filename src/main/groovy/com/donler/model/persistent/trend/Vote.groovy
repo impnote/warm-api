@@ -1,8 +1,6 @@
 package com.donler.model.persistent.trend
 
-import com.donler.model.CreateAndModifyTimestamp
 import groovy.transform.ToString
-import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
 /**
@@ -30,4 +28,6 @@ class Vote {
     Date createdAt // 创建时间
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
+    @ApiModelProperty("是否投过票")
+    boolean isVoted //是否投过票
 }
