@@ -327,6 +327,8 @@ class TrendController {
             newQuerys.each { key, value ->
                 switch (key) {
                     case 'activityId':
+                        def activity = activityRepository.findOne(value)
+                        def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
 
                         break;
                     case 'showtimeId':
@@ -592,7 +594,7 @@ class TrendController {
         })
 
     }
-//TODO 投票list
+
 
     @ResponseBody
     @RequestMapping(value = "/vote/list", method = RequestMethod.GET)
@@ -947,6 +949,11 @@ class TrendController {
         def company = !!vote?.companyId ? companyRepository.findOne(vote?.companyId) : null
         def team = !!vote?.teamId ? teamRepository.findOne(vote?.teamId) : null
         def user = !!vote?.authorId ? userRepository.findOne(vote?.authorId) : null
+        def totalCount = 0
+        vote?.options?.each {
+            VoteOptionInfo voteOptionInfo = voteOptionInfoRepository.findOne(it)
+            return totalCount += voteOptionInfo.votedUserIds.size();
+        }
 
         return new ResVote(
                 id: vote?.id,
@@ -975,7 +982,8 @@ class TrendController {
                                         avatar: votedUser?.avatar
                                 )
                             },
-                            count: voteOptionInfo?.votedUserIds?.size()
+                            count: voteOptionInfo?.votedUserIds?.size(),
+                            totalCount:totalCount
                     )
                 },
                 comments: vote?.comments?.collect {
