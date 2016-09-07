@@ -279,13 +279,13 @@ class TrendController {
                             )) : null
                             approves.add(approve?.id)
                             showtime.approves = approves
-                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime),user)
 
                         } else {
                             approves.remove(needDeleteApproveId)
                             approveArrItemRepository.delete(needDeleteApproveId)
                             showtime.approves = approves
-                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime),user)
                         }
                         break;
                     default: break;
