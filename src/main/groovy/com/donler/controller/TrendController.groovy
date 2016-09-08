@@ -595,7 +595,14 @@ class TrendController {
 
     }
 
-
+    /**
+     * 获取投票列表
+     * @param voteId
+     * @param page
+     * @param limit
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/vote/list", method = RequestMethod.GET)
     @ApiOperation(value = "获取投票列表", notes = "根据用户传入的查询参数进行搜索,如果voteId为空,则默认返回该用户所在公司的所有投票")
@@ -642,7 +649,7 @@ class TrendController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/vote/voteOption/{voteId}/{voteOptionInfoId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/vote/voteOption", method = RequestMethod.POST)
     @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def voteOperation(@PathVariable("voteId")String voteId, @PathVariable("voteOptionInfoId") String voteOptionInfoId, HttpServletRequest req) {
@@ -1014,7 +1021,11 @@ class TrendController {
         )
     }
 
-
+    /**
+     * 根据持久化的投票选项生成res投票选项的item
+     * @param voteOptionInfo
+     * @return
+     */
     ResVoteOptionInfo generateResponseVoteOptionInfoByPersistentVoteOptionInfo(VoteOptionInfo voteOptionInfo) {
         return new ResVoteOptionInfo(
                 id: voteOptionInfo?.id,
