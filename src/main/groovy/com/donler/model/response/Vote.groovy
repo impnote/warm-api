@@ -30,5 +30,5 @@ class Vote {
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
     @ApiModelProperty("是否投过票")
-    boolean isVoted //是否投过票
+    Boolean isVoted = false//是否投过票
 }

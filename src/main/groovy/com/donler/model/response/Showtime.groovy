@@ -34,5 +34,5 @@ class Showtime {
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
     @ApiModelProperty("当前用户是否点赞")
-    Boolean approved
+    Boolean approved =false
 }
