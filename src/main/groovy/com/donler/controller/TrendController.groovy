@@ -652,7 +652,7 @@ class TrendController {
     @RequestMapping(value = "/vote/voteOption", method = RequestMethod.POST)
     @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def voteOperation(@PathVariable("voteId")String voteId, @PathVariable("voteOptionInfoId") String voteOptionInfoId, HttpServletRequest req) {
+    def voteOperation(@RequestParam String voteId, @RequestParam String voteOptionInfoId, HttpServletRequest req) {
         def user = req.getAttribute("user") as User
         def vote = voteRepository.findOne(voteId)
         //判断投票是否投过
