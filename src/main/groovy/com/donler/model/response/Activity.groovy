@@ -42,6 +42,8 @@ class Activity {
     Date createdAt // 创建时间
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
+    @ApiModelProperty(notes = "动态类型")
+    Constants.TypeEnum typeEnum //动态类型
 
 
 }

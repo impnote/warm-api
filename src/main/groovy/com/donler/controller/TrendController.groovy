@@ -79,6 +79,9 @@ class TrendController {
     @Autowired
     CommentArrItemRepository commentArrItemRepository
 
+    @Autowired
+    TrendItemRepository trendItemRepository
+
     /**
      * 发布瞬间
      * @param body
@@ -112,6 +115,13 @@ class TrendController {
             !!oldActivity?.showtimes ? oldActivity.showtimes.push(showtime?.id) : oldActivity.setShowtimes([showtime?.id])
             activityRepository.save(oldActivity)
         }
+        trendItemRepository.save(new TrendItem(
+                typeEnum: Constants.TypeEnum.Showtime,
+                trendId: showtime.id,
+                companyId: currentUser.companyId,
+                createdAt: showtime.createdAt,
+                updatedAt: showtime.updatedAt
+        ))
         return generateResponseShowtimeByPersistentShowtime(showtime)
 
     }
@@ -148,7 +158,8 @@ class TrendController {
     @RequestMapping(value = "/showtime/{showtimeId}", method = RequestMethod.PUT)
     @ApiOperation(response = ResponseMsg.class, value = "更新瞬间", notes = "根据传入的瞬间的id更新一个瞬间")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def updateShowtimeById(@PathVariable("showtimeId") String showtimeId, @Valid @RequestBody ShowtimePublishRequestBody body) {
+    def updateShowtimeById(
+            @PathVariable("showtimeId") String showtimeId, @Valid @RequestBody ShowtimePublishRequestBody body) {
         def showtime = showtimeRepository.findOne(showtimeId)
         if (!showtime) {
             throw new NotFoundException("id为: ${showtimeId}的瞬间不存在")
@@ -182,18 +193,18 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/showtime/list", method = RequestMethod.GET)
-    @ApiOperation(value = "分片加载瞬间",  notes = "获取指定瞬间之前的瞬间,如果需要查询的瞬间的id没有传或者不存在,则返回最新的n条记录,limit为限制本次返回的记录条数")
+    @ApiOperation(value = "分片加载瞬间", notes = "获取指定瞬间之前的瞬间,如果需要查询的瞬间的id没有传或者不存在,则返回最新的n条记录,limit为限制本次返回的记录条数")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     Page<ResShowtime> listShowtimeByLastItemId(
             @RequestParam(required = false)
-                    @ApiParam("指定瞬间的id")
+            @ApiParam("指定瞬间的id")
                     String showtimeId,
             @RequestParam(required = false)
-                    @ApiParam("页数,默认第0页")
+            @ApiParam("页数,默认第0页")
                     Integer page,
             @RequestParam(required = false)
-                    @ApiParam("每页条数,默认第10条")
-                    Integer limit , HttpServletRequest req) {
+            @ApiParam("每页条数,默认第10条")
+                    Integer limit, HttpServletRequest req) {
         def user = req.getAttribute("user") as User
         def perShowtime = !!showtimeId ? showtimeRepository.findOne(showtimeId) : null
         def list
@@ -204,7 +215,7 @@ class TrendController {
 //                            page ?: 0,
 //                            limit ?: 10,
 //                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
-            list = showtimeRepository.findByCompanyId(user.companyId,new PageRequest(
+            list = showtimeRepository.findByCompanyId(user.companyId, new PageRequest(
                     page ?: 0,
                     limit ?: 10,
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
@@ -213,9 +224,9 @@ class TrendController {
             list = showtimeRepository.findByUpdatedAtBefore(
                     perShowtime?.updatedAt,
                     new PageRequest(
-                    page ?: 0,
-                    limit ?: 10,
-                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+                            page ?: 0,
+                            limit ?: 10,
+                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
         }
         return list.map(new Converter() {
             @Override
@@ -224,9 +235,6 @@ class TrendController {
             }
         })
     }
-
-
-
 
     // TODO 其余点赞
     /**
@@ -240,7 +248,7 @@ class TrendController {
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def approveToTrend(
             @RequestBody
-            TrendTypeRequestBody body,
+                    TrendTypeRequestBody body,
             HttpServletRequest req
     ) {
         def user = req.getAttribute("user") as User
@@ -279,13 +287,13 @@ class TrendController {
                             )) : null
                             approves.add(approve?.id)
                             showtime.approves = approves
-                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime),user)
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime), user)
 
                         } else {
                             approves.remove(needDeleteApproveId)
                             approveArrItemRepository.delete(needDeleteApproveId)
                             showtime.approves = approves
-                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime),user)
+                            result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime), user)
                         }
                         break;
                     default: break;
@@ -341,8 +349,8 @@ class TrendController {
                                     comment: body?.comment,
                                     createdAt: new Date(),
                                     updatedAt: new Date(),
-                                    replyToCommentId: !!comment ? comment?.id :null
-                             ))
+                                    replyToCommentId: !!comment ? comment?.id : null
+                            ))
                             !showtime.comments ? showtime.comments = [item?.id] : showtime.comments.push(item?.id)
                             result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
                         } else {
@@ -358,7 +366,6 @@ class TrendController {
         return ResponseMsg.ok(result)
 
     }
-
 
     // TODO 仿造获取某个动态的评论列表接口写获取某个动态的点赞数组接口
 
@@ -490,6 +497,13 @@ class TrendController {
                 createdAt: new Date(),
                 updatedAt: new Date()
         ))
+        trendItemRepository.save(new TrendItem(
+                typeEnum: Constants.TypeEnum.Activity,
+                trendId: activity.id,
+                companyId: currentUser.companyId,
+                createdAt: activity.createdAt,
+                updatedAt: activity.updatedAt
+        ))
         return generateResponseActivityByPersistentActivity(activity)
     }
 
@@ -531,7 +545,8 @@ class TrendController {
     @RequestMapping(value = "/vote/publish", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
     @ApiOperation(value = "发布投票", notes = "根据传入实体生成投票,teamId不传为默认全体可见 body example: {\"content\":\"小张我帅不帅\",\"options\":[\"帅\",\"不帅\"],\"teamId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    ResVote publishVote(@RequestPart String body, @RequestPart(required = false) MultipartFile[] files, HttpServletRequest req) {
+    ResVote publishVote(
+            @RequestPart String body, @RequestPart(required = false) MultipartFile[] files, HttpServletRequest req) {
 
         def currentUser = req.getAttribute("user") as User
         def company = !!currentUser?.companyId ? companyRepository.findOne(currentUser?.companyId) : null
@@ -539,7 +554,7 @@ class TrendController {
         def team = !!newBody?.teamId ? teamRepository.findOne(newBody?.teamId) : null
 
         def savedVote = voteRepository.save(new Vote(
-                image: !!files && files.length >0 ? ossService.uploadFileToOSS(files?.first()) : null,
+                image: !!files && files.length > 0 ? ossService.uploadFileToOSS(files?.first()) : null,
                 teamId: !!team ? team?.id : null,
                 companyId: !!company ? company?.id : null,
                 content: newBody?.content,
@@ -556,6 +571,13 @@ class TrendController {
                 createdAt: new Date(),
                 updatedAt: new Date()
 
+        ))
+        trendItemRepository.save(new TrendItem(
+                typeEnum: Constants.TypeEnum.Vote,
+                trendId: savedVote.id,
+                companyId: currentUser.companyId,
+                createdAt: savedVote.createdAt,
+                updatedAt: savedVote.updatedAt
         ))
 
         return generateResponseVoteByPersistentVote(savedVote)
@@ -609,24 +631,24 @@ class TrendController {
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     Page<ResVote> getVoteByLastItemId(
             @RequestParam(required = false)
-                    @ApiParam("指定投票的id")
-            String voteId,
+            @ApiParam("指定投票的id")
+                    String voteId,
             @RequestParam(required = false)
-                    @ApiParam("页数,默认第0页")
-            Integer page,
+            @ApiParam("页数,默认第0页")
+                    Integer page,
             @RequestParam(required = false)
-                    @ApiParam("每页条数,默认10条")
-            Integer limit, HttpServletRequest req) {
+            @ApiParam("每页条数,默认10条")
+                    Integer limit, HttpServletRequest req) {
         def user = req.getAttribute("user") as User
         def perVote = !!voteId ? voteRepository.findOne(voteId) : null
         def list
         if (!perVote) {
             // 为空则返回最新的n条
-            list = voteRepository.findByCompanyId(user?.companyId,new PageRequest(
-                    page ?:0,
-                    limit ?:10,
+            list = voteRepository.findByCompanyId(user?.companyId, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
-        }else {
+        } else {
             //不为空返回指定瞬间的前n条记录
             list = voteRepository.findByUpdatedAtBefore(
                     perVote?.updatedAt,
@@ -649,19 +671,20 @@ class TrendController {
      * @param req
      * @return
      */
+    @ResponseBody
     @RequestMapping(value = "/vote/voteOption", method = RequestMethod.POST)
-    @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作")
+    @ApiOperation(value = "投票操作", notes = "根据投票Id进行投票操作, body example: {\"voteId\":\"string\",\"voteOptionInfoId\":\"string\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def voteOperation(@RequestParam String voteId, @RequestParam String voteOptionInfoId, HttpServletRequest req) {
+    def voteOperation(@Valid @RequestBody VoteOperationRequestBody body, HttpServletRequest req) {
         def user = req.getAttribute("user") as User
-        def vote = voteRepository.findOne(voteId)
+        def vote = voteRepository.findOne(body?.voteId)
         //判断投票是否投过
         if (vote?.isVoted) {
             return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
         }
-        def voteOption = voteOptionInfoRepository.findOne(voteOptionInfoId)
+        def voteOption = voteOptionInfoRepository.findOne(body?.voteOptionInfoId)
         if (!voteOption) {
-            throw new NotFoundException("id为:${voteOptionInfoId}的投票不存在")
+            throw new NotFoundException("id为:${body?.voteOptionInfoId}的投票不存在")
         }
         def votedUserIds = voteOption?.votedUserIds ?: []
 //        votedUserIds.each {
@@ -683,7 +706,6 @@ class TrendController {
         return ResponseMsg.ok(generateResponseVoteByPersistentVote(vote))
     }
 
-
     /**
      * 发布话题
      * @param body
@@ -704,7 +726,7 @@ class TrendController {
             HttpServletRequest req
     ) {
         def currentUser = req.getAttribute("user") as User
-        def topicBody = ValidationUtil.validateModelAttribute(TopicPublishRequestBody.class,body) as TopicPublishRequestBody
+        def topicBody = ValidationUtil.validateModelAttribute(TopicPublishRequestBody.class, body) as TopicPublishRequestBody
         def saveTopic = topicRepository.save(new Topic(
                 title: topicBody?.title,
                 content: topicBody?.content,
@@ -714,7 +736,14 @@ class TrendController {
                 authorId: currentUser?.id,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                image: files.size()==0 ? null : ossService.uploadFileToOSS(files.first())
+                image: files.size() == 0 ? null : ossService.uploadFileToOSS(files.first())
+        ))
+        trendItemRepository.save(new TrendItem(
+                typeEnum: Constants.TypeEnum.Topic,
+                trendId: saveTopic.id,
+                companyId: currentUser.companyId,
+                createdAt: saveTopic.createdAt,
+                updatedAt: saveTopic.updatedAt
         ))
         return generateResponseTopicByPersistentTopic(saveTopic)
     }
@@ -796,9 +825,86 @@ class TrendController {
         return newList
     }
 
+    /**
+     * 获取所有动态
+     * @param page
+     * @param limit
+     * @param req
+     */
+    @ResponseBody
+    @RequestMapping(value = "/list/all", method = RequestMethod.GET)
+    @ApiOperation(value = "获取所有动态", notes = "获取所有动态信息")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getAllTrend(@RequestParam(required = false)
+                    @ApiParam("页数,默认第0页")
+                                Integer page,
+                    @RequestParam(required = false)
+                    @ApiParam("每页条数,默认10条")
+                            Integer limit,
+                    HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+//        def list3 = trendItemRepository.findAll()
+//        def list2 = trendItemRepository.findByCompanyId(user?.companyId)
+        Page<TrendItem> list = trendItemRepository.findByCompanyId(user?.companyId,
+                new PageRequest(
+                page ?: 0,
+                limit ?: 10,
+                new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+
+        def newList = []
+        list.each {
+            switch (it.typeEnum) {
+                case Constants.TypeEnum.Showtime:
+                    def newShowtime = showtimeRepository.findOne(it.trendId)
+                    newList.add(generateResponseShowtimeByPersistentShowtime(newShowtime))
+                    break
+                case Constants.TypeEnum.Activity:
+                    def newActivity = activityRepository.findOne(it.trendId)
+                    newList.add(generateResponseActivityByPersistentActivity(newActivity))
+                    break
+                case Constants.TypeEnum.Topic:
+                    def newTopic = topicRepository.findOne(it.trendId)
+                    newList.add(generateResponseTopicByPersistentTopic(newTopic))
+                    break
+                case Constants.TypeEnum.Vote:
+                    def newVote = voteRepository.findOne(it.trendId)
+                    newList.add(generateResponseVoteByPersistentVote(newVote))
+                    break
+            }
+        }
+//        newList.each {
+//            println(it.createdAt)
+//        }
+//        for (int i = 0; i < newList.size(); i++) {
+//            println(newList.get(i).createdAt)
+//        }
+        return newList
+//        List<ResActivity> activityList = !!user?.companyId ? activityRepository.findByCompanyId(user?.companyId) : []
+//        List<ResVote> voteList = !!user?.companyId ? voteRepository.findByCompanyId(user?.companyId) : []
+//        List<ResTopic> topicList = !!user?.companyId ? topicRepository.findByCompanyId(user?.companyId) : []
+//        List<ResShowtime> showtimeList = !!user?.companyId ? showtimeRepository.findByCompanyId(user?.companyId) : []
+//        newList.addAll(activityList)
+//        newList.addAll(voteList)
+//        newList.addAll(topicList)
+//        newList.addAll(showtimeList)
+//        newList.sort(new Comparator() {
+//            @Override
+//            int compare(Object o1, Object o2) {
+//                Date date1 = (Date) (o1.createdAt)
+//                Date date2 = (Date) (o2.createdAt)
+//                return date1.compareTo(date2)
+//            }
+//        })
+//
+////        newList.each {
+////            println(it.createdAt)
+////        }
+//        for (int i = 0; i < newList.size(); i++) {
+//            println(newList.get(i).createdAt)
+//        }
 
 
-
+    }
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
@@ -844,6 +950,7 @@ class TrendController {
                 ),
                 createdAt: showtime?.createdAt,
                 updatedAt: showtime?.updatedAt,
+                typeEnum: Constants.TypeEnum.Showtime,
                 approves: showtime?.approves?.collect {
                     def approve = approveArrItemRepository.findOne(it)
                     def user = userRepository.findOne(approve?.userId)
@@ -942,7 +1049,8 @@ class TrendController {
                 address: activity?.address,
                 desc: activity?.desc,
                 createdAt: activity?.createdAt,
-                updatedAt: activity?.updatedAt
+                updatedAt: activity?.updatedAt,
+                typeEnum: Constants.TypeEnum.Activity
         )
     }
 
@@ -990,7 +1098,7 @@ class TrendController {
                                 )
                             },
                             count: voteOptionInfo?.votedUserIds?.size(),
-                            totalCount:totalCount
+                            totalCount: totalCount
                     )
                 },
                 comments: vote?.comments?.collect {
@@ -1015,7 +1123,8 @@ class TrendController {
                 ) : null,
                 createdAt: vote?.createdAt,
                 updatedAt: vote?.updatedAt,
-                isVoted: vote?.isVoted
+                isVoted: vote?.isVoted,
+                typeEnum: Constants.TypeEnum.Vote
 
 
         )
@@ -1069,8 +1178,6 @@ class TrendController {
         )
     }
 
-
-
     /**
      * 根据持久化话题模型生成res话题
      * @param topic
@@ -1102,6 +1209,7 @@ class TrendController {
                 ) : null,
                 createdAt: topic?.createdAt,
                 updatedAt: topic?.updatedAt,
+                typeEnum: Constants.TypeEnum.Topic,
                 comments: topic?.comments?.collect {
                     def comment = commentArrItemRepository.findOne(it)
                     def commentUser = !!comment?.userId ? userRepository.findOne(comment?.userId) : null
@@ -1122,8 +1230,6 @@ class TrendController {
         )
 
     }
-
-
 
 
 }

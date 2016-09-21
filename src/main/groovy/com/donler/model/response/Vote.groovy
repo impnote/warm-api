@@ -1,5 +1,6 @@
 package com.donler.model.response
 
+import com.donler.model.Constants
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleTeamModel
 import com.donler.model.SimpleUserModel
@@ -31,4 +32,6 @@ class Vote {
     Date updatedAt // 更新时间
     @ApiModelProperty("是否投过票")
     Boolean isVoted = false//是否投过票
+    @ApiModelProperty(notes = "动态类型")
+    Constants.TypeEnum typeEnum //动态类型
 }

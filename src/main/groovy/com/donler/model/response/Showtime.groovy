@@ -35,4 +35,6 @@ class Showtime {
     Date updatedAt // 更新时间
     @ApiModelProperty("当前用户是否点赞")
     Boolean approved =false
+    @ApiModelProperty(notes = "动态类型")
+    Constants.TypeEnum typeEnum //动态类型
 }

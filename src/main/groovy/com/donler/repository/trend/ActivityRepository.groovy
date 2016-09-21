@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
  * Created by jason on 6/13/16.
  */
 interface ActivityRepository extends MongoRepository<Activity, String> {
-
+    List<Activity> findByCompanyId(def id)
 }
