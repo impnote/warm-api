@@ -1,8 +1,8 @@
 package com.donler.model.response
 
-import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.SimpleUserModel
 import io.swagger.annotations.ApiModelProperty
+
 /**
  * Created by jason on 5/26/16.
  */

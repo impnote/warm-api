@@ -1,15 +1,8 @@
 package com.donler.thirdparty.easemob.server
 
-import com.donler.model.persistent.user.User
-import com.donler.thirdparty.easemob.server.api.ChatGroupAPI
-import com.donler.thirdparty.easemob.server.api.ChatMessageAPI
-import com.donler.thirdparty.easemob.server.api.ChatRoomAPI
-import com.donler.thirdparty.easemob.server.api.FileAPI
-import com.donler.thirdparty.easemob.server.api.IMUserAPI
-import com.donler.thirdparty.easemob.server.api.SendMessageAPI
+import com.donler.thirdparty.easemob.server.api.*
 import com.donler.thirdparty.easemob.server.comm.ClientContext
 import com.donler.thirdparty.easemob.server.comm.EasemobRestAPIFactory
-import com.donler.thirdparty.easemob.server.comm.body.IMUserBody
 
 /**
  * Created by zhangjiasheng on 7/19/16.

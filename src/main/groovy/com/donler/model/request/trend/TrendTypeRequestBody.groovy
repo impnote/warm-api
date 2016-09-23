@@ -2,8 +2,6 @@ package com.donler.model.request.trend
 
 import io.swagger.annotations.ApiModelProperty
 
-import javax.validation.constraints.NotNull
-
 /**
  * Created by zhangjiasheng on 7/25/16.
  */

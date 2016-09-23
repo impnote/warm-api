@@ -1,11 +1,11 @@
 package com.donler.thirdparty.easemob.server.comm.body;
 
-import java.util.List;
-
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import java.util.List;
 
 public class IMUsersBody implements BodyWrapper {
 	

@@ -2,10 +2,9 @@ package com.donler.thirdparty.easemob.server.comm;
 
 import com.donler.thirdparty.easemob.server.api.AuthTokenAPI;
 import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class TokenGenerator {
 	

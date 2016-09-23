@@ -815,7 +815,7 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/topic/list/all", method = RequestMethod.GET)
-    @ApiOperation(value = "获取所有话题", notes = "获取所有话题信息")
+    @ApiOperation(value = "获取所有话题", notes = "如果传trendId获取所有话题信息")
     List<ResTopic> getAllTopics() {
         List<Topic> list = topicRepository.findAll()
         def newList = []
@@ -825,7 +825,7 @@ class TrendController {
         return newList
     }
 
-    /**
+   /**
      * 获取所有动态
      * @param page
      * @param limit
@@ -833,9 +833,15 @@ class TrendController {
      */
     @ResponseBody
     @RequestMapping(value = "/list/all", method = RequestMethod.GET)
-    @ApiOperation(value = "获取所有动态", notes = "获取所有动态信息")
+    @ApiOperation(value = "获取所有动态", notes = "如果传入trendId则为上拉刷新,不传则为下拉刷新")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def getAllTrend(@RequestParam(required = false)
+    def getAllTrend(
+//                    @RequestBody
+//                    TrendTypeRequestBody body,
+                    @RequestParam(required = false)
+                    @ApiParam("")
+                                String trendId,
+                    @RequestParam(required = false)
                     @ApiParam("页数,默认第0页")
                                 Integer page,
                     @RequestParam(required = false)
@@ -843,15 +849,36 @@ class TrendController {
                             Integer limit,
                     HttpServletRequest req) {
         def user = req.getAttribute("user") as User
+//        def querys =  [activityId: body?.activityId, voteId: body?.voteId, showtimeId: body?.showtimeId, topicId: body?.topicId]
+//        def newQuerys = [:]
+//        querys.each { key , value ->
+//            println("value${value}")
+//            if (value != null) {
+//                newQuerys.put(key , value)
+//            }
+//        }
+        def perTrend = !!trendId ? trendItemRepository.findByTrendId(trendId) : null
+        Page<TrendItem> list
+        def newList = []
+        if (!perTrend){
+        // 如果id为空则返回最新的
 //        def list3 = trendItemRepository.findAll()
 //        def list2 = trendItemRepository.findByCompanyId(user?.companyId)
-        Page<TrendItem> list = trendItemRepository.findByCompanyId(user?.companyId,
+         list = trendItemRepository.findByCompanyId(user?.companyId,
                 new PageRequest(
                 page ?: 0,
                 limit ?: 10,
-                new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+                new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
 
-        def newList = []
+        } else{
+        //如果不为空则返回指定动态的前n条记录
+             list = trendItemRepository.findByCreatedAtBefore(perTrend?.createdAt,
+            new PageRequest(
+                page ?: 0,
+                limit ?: 10,
+                new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+
+        }
         list.each {
             switch (it.typeEnum) {
                 case Constants.TypeEnum.Showtime:
@@ -872,13 +899,13 @@ class TrendController {
                     break
             }
         }
+        return newList
 //        newList.each {
 //            println(it.createdAt)
 //        }
 //        for (int i = 0; i < newList.size(); i++) {
 //            println(newList.get(i).createdAt)
 //        }
-        return newList
 //        List<ResActivity> activityList = !!user?.companyId ? activityRepository.findByCompanyId(user?.companyId) : []
 //        List<ResVote> voteList = !!user?.companyId ? voteRepository.findByCompanyId(user?.companyId) : []
 //        List<ResTopic> topicList = !!user?.companyId ? topicRepository.findByCompanyId(user?.companyId) : []

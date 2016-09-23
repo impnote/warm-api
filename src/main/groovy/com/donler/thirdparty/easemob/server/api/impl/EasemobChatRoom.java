@@ -4,8 +4,8 @@ import com.donler.thirdparty.easemob.server.api.ChatRoomAPI;
 import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
 import com.donler.thirdparty.easemob.server.comm.helper.HeaderHelper;
-import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
+import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 import org.apache.commons.lang.StringUtils;
 
 public class EasemobChatRoom extends EasemobRestAPI implements ChatRoomAPI {

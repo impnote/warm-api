@@ -1,15 +1,14 @@
 package com.donler.thirdparty.easemob.server.api.impl;
 
 import com.donler.thirdparty.easemob.server.api.AuthTokenAPI;
-import com.donler.thirdparty.easemob.server.comm.helper.HeaderHelper;
+import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.comm.body.AuthTokenBody;
+import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
+import com.donler.thirdparty.easemob.server.comm.helper.HeaderHelper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
+import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
-import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
-import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 
 public class EasemobAuthToken extends EasemobRestAPI implements AuthTokenAPI {
 	

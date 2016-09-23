@@ -1,8 +1,8 @@
 package com.donler.thirdparty.easemob.server.api.impl;
 
+import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.api.FileAPI;
 import com.donler.thirdparty.easemob.server.comm.helper.HeaderHelper;
-import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 
 import java.io.File;

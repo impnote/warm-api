@@ -1,10 +1,9 @@
 package com.donler.thirdparty.easemob.server.comm.body;
 
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
-import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import org.apache.commons.lang.StringUtils;
 
 public class IMUserBody implements BodyWrapper {
 	

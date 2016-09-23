@@ -1,10 +1,5 @@
 package com.donler.thirdparty.easemob.server.comm.invoker;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-
 import com.donler.thirdparty.easemob.server.api.RestAPIInvoker;
 import com.donler.thirdparty.easemob.server.comm.MessageTemplate;
 import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
@@ -13,6 +8,11 @@ import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.QueryWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,11 +28,11 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class HttpClientRestAPIInvoker implements RestAPIInvoker {
 	

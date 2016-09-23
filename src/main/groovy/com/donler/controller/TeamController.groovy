@@ -1,15 +1,12 @@
 package com.donler.controller
 
 import com.donler.exception.AttrNotValidException
-import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleUserModel
-import com.donler.model.persistent.company.Company
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.user.User
-import com.donler.model.response.Team as ResTeam
-import com.donler.model.request.company.CompanyCreateRequestBody
 import com.donler.model.request.team.TeamCreateRequestBody
+import com.donler.model.response.Team as ResTeam
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
 import com.donler.repository.user.UserRepository

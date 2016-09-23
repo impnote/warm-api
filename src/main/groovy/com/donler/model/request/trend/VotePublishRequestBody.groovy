@@ -1,11 +1,11 @@
 package com.donler.model.request.trend
 
-import com.donler.model.request.ImageUploadDataUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
+
 /**
  * Created by jason on 6/28/16.
  */

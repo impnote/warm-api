@@ -1,10 +1,10 @@
 package com.donler.model.persistent.trend
 
-import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.ImageUrlUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
+
 /**
  * Created by jason on 5/23/16.
  */

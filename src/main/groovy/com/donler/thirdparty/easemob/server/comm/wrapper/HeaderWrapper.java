@@ -1,13 +1,12 @@
 package com.donler.thirdparty.easemob.server.comm.wrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HeaderWrapper {
 	

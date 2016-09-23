@@ -1,10 +1,9 @@
 package com.donler.model.persistent.team
 
-import com.donler.model.CreateAndModifyTimestamp
 import groovy.transform.ToString
-import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
+
 /**
  * Created by jason on 5/26/16.
  */

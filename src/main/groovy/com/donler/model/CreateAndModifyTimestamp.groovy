@@ -1,8 +1,8 @@
 package com.donler.model
 
 import groovy.transform.ToString
-import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+
 /**
  * Created by jason on 5/25/16.
  */

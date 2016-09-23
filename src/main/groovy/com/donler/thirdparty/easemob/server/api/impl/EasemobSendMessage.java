@@ -4,8 +4,8 @@ import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.api.SendMessageAPI;
 import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
 import com.donler.thirdparty.easemob.server.comm.helper.HeaderHelper;
-import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
+import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
 
 public class EasemobSendMessage extends EasemobRestAPI implements SendMessageAPI {
     private static final String ROOT_URI = "/messages";

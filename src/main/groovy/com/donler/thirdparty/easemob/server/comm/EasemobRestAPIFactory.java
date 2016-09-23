@@ -2,8 +2,8 @@ package com.donler.thirdparty.easemob.server.comm;
 
 import com.donler.thirdparty.easemob.server.api.EasemobRestAPI;
 import com.donler.thirdparty.easemob.server.api.RestAPIInvoker;
-import com.donler.thirdparty.easemob.server.comm.invoker.JerseyRestAPIInvoker;
 import com.donler.thirdparty.easemob.server.comm.invoker.HttpClientRestAPIInvoker;
+import com.donler.thirdparty.easemob.server.comm.invoker.JerseyRestAPIInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

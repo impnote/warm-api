@@ -1,8 +1,6 @@
 package com.donler.model.request.trend
 
-import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import org.springframework.web.bind.annotation.RequestParam
 
 import javax.validation.constraints.NotNull
 

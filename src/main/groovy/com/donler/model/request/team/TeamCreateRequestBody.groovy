@@ -1,11 +1,10 @@
 package com.donler.model.request.team
 
-import com.donler.model.CreateAndModifyTimestamp
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
-import org.springframework.data.annotation.Id
 
 import javax.validation.constraints.NotNull
+
 /**
  * Created by jason on 6/13/16.
  */

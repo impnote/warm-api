@@ -1,11 +1,11 @@
 package com.donler.thirdparty.easemob.server.comm.wrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueryWrapper {
 	

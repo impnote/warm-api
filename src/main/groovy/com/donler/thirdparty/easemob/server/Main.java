@@ -3,17 +3,6 @@ package com.donler.thirdparty.easemob.server;
 import com.donler.thirdparty.easemob.server.api.*;
 import com.donler.thirdparty.easemob.server.comm.ClientContext;
 import com.donler.thirdparty.easemob.server.comm.EasemobRestAPIFactory;
-import com.donler.thirdparty.easemob.server.comm.body.IMUserBody;
-import com.donler.thirdparty.easemob.server.comm.body.IMUsersBody;
-import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
-import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
 

@@ -1,12 +1,12 @@
 package com.donler.thirdparty.easemob.server.comm.invoker;
 
+import com.donler.thirdparty.easemob.server.api.RestAPIInvoker;
 import com.donler.thirdparty.easemob.server.comm.MessageTemplate;
 import com.donler.thirdparty.easemob.server.comm.constant.HTTPMethod;
 import com.donler.thirdparty.easemob.server.comm.utils.RestAPIUtils;
-import com.donler.thirdparty.easemob.server.comm.wrapper.QueryWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
-import com.donler.thirdparty.easemob.server.api.RestAPIInvoker;
 import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
+import com.donler.thirdparty.easemob.server.comm.wrapper.QueryWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;

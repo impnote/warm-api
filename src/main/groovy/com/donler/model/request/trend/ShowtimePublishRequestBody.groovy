@@ -1,6 +1,5 @@
 package com.donler.model.request.trend
 
-import com.donler.model.request.ImageUploadDataUnit
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 

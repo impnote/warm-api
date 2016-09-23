@@ -1,8 +1,8 @@
 package com.donler.thirdparty.easemob.server.api;
 
-import com.donler.thirdparty.easemob.server.comm.wrapper.QueryWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.HeaderWrapper;
+import com.donler.thirdparty.easemob.server.comm.wrapper.QueryWrapper;
 import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper;
 
 import java.io.File;

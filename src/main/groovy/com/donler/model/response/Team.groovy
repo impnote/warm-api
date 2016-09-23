@@ -1,6 +1,5 @@
 package com.donler.model.response
 
-import com.donler.model.CreateAndModifyTimestamp
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleUserModel
 import io.swagger.annotations.ApiModelProperty

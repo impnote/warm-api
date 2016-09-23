@@ -1,7 +1,5 @@
 package com.donler.model.persistent.trend
 
-import com.donler.model.CreateAndModifyTimestamp
-import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
 

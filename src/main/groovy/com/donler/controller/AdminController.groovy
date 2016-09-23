@@ -2,11 +2,7 @@ package com.donler.controller
 
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
-import com.donler.repository.trend.ActivityRepository
-import com.donler.repository.trend.ApproveArrItemRepository
-import com.donler.repository.trend.CommentArrItemRepository
-import com.donler.repository.trend.ShowtimeRepository
-import com.donler.repository.trend.VoteRepository
+import com.donler.repository.trend.*
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
@@ -16,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+
 /**
  * Created by jason on 5/27/16.
  */

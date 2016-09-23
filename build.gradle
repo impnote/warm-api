@@ -36,6 +36,7 @@ dependencies {
 	compile('com.yunpian.sdk:yunpian-java-sdk:1.1.1')
 	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.apache.httpcomponents:httpmime:4.5.2')
+
 	compile('org.glassfish.jersey.core:jersey-client:2.23.1')
 	compile('org.glassfish.jersey.media:jersey-media-multipart:2.23.1')
 	compile('org.glassfish.jersey.media:jersey-media-json-jackson:2.23.1')
