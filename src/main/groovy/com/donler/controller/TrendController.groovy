@@ -335,12 +335,26 @@ class TrendController {
             newQuerys.each { key, value ->
                 switch (key) {
                     case 'activityId':
-                        def activity = activityRepository.findOne(value)
+                        def activity = activityRepository.findOne(value as String)
                         def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
+
+                        if (!!activity) {
+                            def item = commentArrItemRepository.save(new CommentArrItem(
+                                    userId: user?.id,
+                                    comment: body?.comment,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    replyToCommentId: !!comment ? comment?.id : null
+                            ))
+                            !activity.comments ? activity.comments = [item?.id] : activity.comments.push(item?.id)
+                            result = generateResponseActivityByPersistentActivity(activityRepository.save(activity))
+                        } else {
+                            throw new AttrNotValidException("请输入正确的活动id")
+                        }
 
                         break;
                     case 'showtimeId':
-                        def showtime = showtimeRepository.findOne(value)
+                        def showtime = showtimeRepository.findOne(value as String)
                         def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
 
                         if (!!showtime) {
@@ -355,6 +369,42 @@ class TrendController {
                             result = generateResponseShowtimeByPersistentShowtime(showtimeRepository.save(showtime))
                         } else {
                             throw new AttrNotValidException("请输入正确的瞬间id")
+                        }
+                        break;
+                    case 'voteId':
+                        def vote = voteRepository.findOne(value as String)
+                        def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
+
+                        if (!!vote) {
+                            def item = commentArrItemRepository.save(new CommentArrItem(
+                                    userId: user?.id,
+                                    comment: body?.comment,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    replyToCommentId: !!comment ? comment?.id : null
+                            ))
+                            !vote.comments ? vote.comments = [item?.id] : vote.comments.push(item?.id)
+                            result = generateResponseVoteByPersistentVote(voteRepository.save(vote))
+                        } else {
+                            throw new AttrNotValidException("请输入正确的投票id")
+                        }
+                        break;
+                    case 'topicId':
+                        def topic = topicRepository.findOne(value as String)
+                        def comment = !!body?.replyToCommentId ? commentArrItemRepository.findOne(body?.replyToCommentId) : null
+
+                        if (!!topic) {
+                            def item = commentArrItemRepository.save(new CommentArrItem(
+                                    userId: user?.id,
+                                    comment: body?.comment,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    replyToCommentId: !!comment ? comment?.id : null
+                            ))
+                            !topic.comments ? topic.comments = [item?.id] : topic.comments.push(item?.id)
+                            result = generateResponseTopicByPersistentTopic(topicRepository.save(topic))
+                        } else {
+                            throw new AttrNotValidException("请输入正确的投票id")
                         }
                         break;
                     default: break;
@@ -1051,7 +1101,11 @@ class TrendController {
                 desc: activity?.desc,
                 createdAt: activity?.createdAt,
                 updatedAt: activity?.updatedAt,
-                typeEnum: Constants.TypeEnum.Activity
+                typeEnum: Constants.TypeEnum.Activity,
+                comments: activity?.comments?.collect {
+                    def comment = !!it ? commentArrItemRepository.findOne(it) : null
+                    return !!comment ? generateResponseCommentArrItemByPersistentCommentArrItem(comment) : null
+                }
         )
     }
 
