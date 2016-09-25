@@ -872,13 +872,14 @@ class TrendController {
                     break
             }
         }
+        return newList
+        //测试macbookpro
 //        newList.each {
 //            println(it.createdAt)
 //        }
 //        for (int i = 0; i < newList.size(); i++) {
 //            println(newList.get(i).createdAt)
 //        }
-        return newList
 //        List<ResActivity> activityList = !!user?.companyId ? activityRepository.findByCompanyId(user?.companyId) : []
 //        List<ResVote> voteList = !!user?.companyId ? voteRepository.findByCompanyId(user?.companyId) : []
 //        List<ResTopic> topicList = !!user?.companyId ? topicRepository.findByCompanyId(user?.companyId) : []
