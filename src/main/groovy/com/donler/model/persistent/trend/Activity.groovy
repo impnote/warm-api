@@ -45,6 +45,8 @@ class Activity {
 
     @ApiModelProperty("更新时间")
     Date updatedAt // 更新时间
+    @ApiModelProperty(notes = "评论")
+    List<String> comments // 评论数组
 
 
 }
