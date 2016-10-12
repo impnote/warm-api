@@ -28,6 +28,7 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import net.sf.json.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
@@ -35,6 +36,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import springfox.documentation.spring.web.json.Json
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
@@ -754,6 +756,36 @@ class TrendController {
         vote.isVoted = true
         voteRepository.save(vote)
         return ResponseMsg.ok(generateResponseVoteByPersistentVote(vote))
+    }
+
+
+    @ResponseBody
+    @RequestMapping(value = "/vote/voters", method = RequestMethod.GET)
+    @ApiOperation(value = "投票人详情", notes = "根据投票选项Id进行获取投票人详情")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getVotersInfo(@RequestParam(required = true)
+                                  String voteId) {
+        def currentVote = !!voteId ? voteRepository.findOne(voteId) : null
+        def options = []
+        def dic = [:]
+        currentVote.options.each {
+            println("id:"+it)
+            def currentOption = voteOptionInfoRepository.findOne(it)
+            def d = [:]
+            println("id:"+currentOption?.id)
+            d["id"] = currentOption?.id
+            d["optionName"] = currentOption.option
+            def users = []
+            currentOption.votedUserIds.each {
+              def user = userRepository.findOne(it)
+                dic["id"] = user?.id
+                dic["imgUrl"] = user?.avatar
+                users.add(dic)
+            }
+            d["users"] = users
+            options.add(d)
+        }
+        return options as JSON
     }
 
     /**
