@@ -632,7 +632,7 @@ class TrendController {
                 updatedAt: savedVote.updatedAt
         ))
 
-        return generateResponseVoteByPersistentVote(savedVote)
+        return generateResponseVoteByPersistentVote(savedVote,currentUser)
 
     }
 
@@ -663,7 +663,7 @@ class TrendController {
         return list.map(new Converter<Vote, ResVote>() {
             @Override
             ResVote convert(Vote source) {
-                return generateResponseVoteByPersistentVote(source)
+                return generateResponseVoteByPersistentVote(source,user)
             }
         })
 
@@ -712,7 +712,7 @@ class TrendController {
         return list.map(new Converter() {
             @Override
             Object convert(Object source) {
-                return generateResponseVoteByPersistentVote(source as Vote)
+                return generateResponseVoteByPersistentVote(source as Vote,user)
             }
         })
     }
@@ -731,9 +731,18 @@ class TrendController {
         def user = req.getAttribute("user") as User
         def vote = voteRepository.findOne(body?.voteId)
         //判断投票是否投过
-        if (vote?.isVoted) {
-            return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
+        for (int i = 0; vote.options.size() > i; i++) {
+            def currentOption = voteOptionInfoRepository.findOne(vote.options.get(i))
+            for (int j = 0; currentOption.votedUserIds.size() > j; j++) {
+                if (user?.id == currentOption.votedUserIds.get(j)) {
+                    return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
+                }
+            }
+
         }
+//        if (vote?.isVoted) {
+//            return ResponseMsg.ok(["errMsg": "已经投过票", "errNo": 404])
+//        }
         def voteOption = voteOptionInfoRepository.findOne(body?.voteOptionInfoId)
         if (!voteOption) {
             throw new NotFoundException("id为:${body?.voteOptionInfoId}的投票不存在")
@@ -753,9 +762,9 @@ class TrendController {
         votedUserIds.add(user?.id)
         voteOption.votedUserIds = votedUserIds
         voteOptionInfoRepository.save(voteOption)
-        vote.isVoted = true
+//        vote.isVoted = true
         voteRepository.save(vote)
-        return ResponseMsg.ok(generateResponseVoteByPersistentVote(vote))
+        return ResponseMsg.ok(generateResponseVoteByPersistentVote(vote,user))
     }
 
 
@@ -1238,11 +1247,46 @@ class TrendController {
                 ) : null,
                 createdAt: vote?.createdAt,
                 updatedAt: vote?.updatedAt,
-                isVoted: vote?.isVoted,
+//                isVoted: vote?.isVoted,
                 typeEnum: Constants.TypeEnum.Vote
 
 
         )
+    }
+
+    ResVote generateResponseVoteByPersistentVote(Vote vote, User user) {
+        def res = generateResponseVoteByPersistentVote(vote)
+        res.isVoted = false
+//        vote.options.each {
+//            def currentOption = voteOptionInfoRepository.findOne(it)
+//            currentOption.votedUserIds.each {
+//                if (user.id == it) {
+//                    res.isVoted = true
+//
+//                }
+//            }
+//        }
+//        for (String options : res.options) {
+//            def currentOption = voteOptionInfoRepository.findOne(options)
+//            for (String userIds : currentOption?.votedUserIds) {
+//                if (user?.id == userIds) {
+//                    res.isVoted = true
+//                    break
+//                }
+//            }
+//        }
+        for (int i = 0; vote.options.size() > i; i++) {
+            def currentOption = voteOptionInfoRepository.findOne(vote.options.get(i))
+            for (int j = 0; currentOption.votedUserIds.size() > j; j++) {
+                if (user?.id == currentOption.votedUserIds.get(j)) {
+                    res.isVoted = true
+                    return res
+                }
+            }
+
+        }
+        return res
+
     }
 
     /**
