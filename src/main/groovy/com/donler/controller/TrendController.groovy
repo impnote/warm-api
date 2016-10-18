@@ -594,7 +594,7 @@ class TrendController {
  */
     @ResponseBody
     @RequestMapping(value = "/activity/sign-up", method = RequestMethod.POST)
-    @ApiOperation(value = "报名活动", notes = "根据活动id进行报名")
+    @ApiOperation(value = "报名活动", notes = "根据活动id进行报名,首次调用为报名,再次调用为取消报名,是否报名的字段为isSignUp")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def signUpActivity(@RequestParam String activityId, HttpServletRequest req ) {
         def user = req.getAttribute("user") as User
