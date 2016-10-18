@@ -46,6 +46,10 @@ class Activity {
     Constants.TypeEnum typeEnum //动态类型
     @ApiModelProperty(notes = "评论")
     List<CommentArrItem> comments // 评论数组
+    @ApiModelProperty(notes = "是否报名")
+    boolean isSignUp //是否已经报名
+//    @ApiModelProperty(notes = "报名活动的成员")
+//    List<SimpleUserModel> membersId //报名成员
 
 
 }

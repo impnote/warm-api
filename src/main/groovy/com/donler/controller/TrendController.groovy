@@ -586,6 +586,32 @@ class TrendController {
     ResActivity getActivityById(@PathVariable("activityId") String activityId) {
         return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
     }
+/**
+* 报名活动
+* @param activityId
+* @param req
+* @return
+ */
+    @ResponseBody
+    @RequestMapping(value = "/activity/sign-up", method = RequestMethod.POST)
+    @ApiOperation(value = "报名活动", notes = "根据活动id进行报名")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def signUpActivity(@RequestParam String activityId, HttpServletRequest req ) {
+        def user = req.getAttribute("user") as User
+        def currentActivity = !!activityId ? activityRepository.findOne(activityId) : null
+        def members = currentActivity.members
+        if (generateResponseActivityByPersistentActivity(currentActivity, user).isSignUp) {
+            members.remove(user?.id)
+            currentActivity.members = members
+            activityRepository.save(currentActivity)
+        } else {
+            members.add(user?.id)
+            currentActivity.members = members
+            activityRepository.save(currentActivity)
+        }
+
+        return generateResponseActivityByPersistentActivity(currentActivity,user)
+    }
 
     /**
      * 发布投票
@@ -986,7 +1012,7 @@ class TrendController {
                     break
                 case Constants.TypeEnum.Vote:
                     def newVote = voteRepository.findOne(it.trendId)
-                    newList.add(generateResponseVoteByPersistentVote(newVote))
+                    newList.add(generateResponseVoteByPersistentVote(newVote,user))
                     break
             }
         }
@@ -1175,7 +1201,27 @@ class TrendController {
                     def comment = !!it ? commentArrItemRepository.findOne(it) : null
                     return !!comment ? generateResponseCommentArrItemByPersistentCommentArrItem(comment) : null
                 }
+//                membersId: activity?.menbersId?.collect {
+//                    def user = !!it ? userRepository.findOne(it) : null
+//                    return  !!user ? new SimpleUserModel(
+//                            id: user?.id,
+//                            nickname: user?.nickname,
+//                            avatar: user?.avatar
+//                    ) : null
+//                }
         )
+    }
+
+    ResActivity generateResponseActivityByPersistentActivity(Activity activity, User user) {
+        def res = generateResponseActivityByPersistentActivity(activity)
+        res.isSignUp = false
+        for (def member : res.members) {
+            if (member?.id == user?.id) {
+                res.isSignUp = true
+                break
+            }
+        }
+        return res
     }
 
     /**
@@ -1253,7 +1299,12 @@ class TrendController {
 
         )
     }
-
+/**
+* 增加isVoted字段
+* @param vote
+* @param user
+* @return
+ */
     ResVote generateResponseVoteByPersistentVote(Vote vote, User user) {
         def res = generateResponseVoteByPersistentVote(vote)
         res.isVoted = false

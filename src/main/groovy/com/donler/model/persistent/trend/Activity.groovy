@@ -47,6 +47,8 @@ class Activity {
     Date updatedAt // 更新时间
     @ApiModelProperty(notes = "评论")
     List<String> comments // 评论数组
+//    @ApiModelProperty(notes = "报名活动的成员")
+//    List<String> menbersId //报名成员
 
 
 }
