@@ -7,5 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface TopicRepository extends MongoRepository<Topic, String> {
     List<Topic> findByCompanyId(def id)
+    List<Topic> findByAuthorId(def authorId)
+
 
 }

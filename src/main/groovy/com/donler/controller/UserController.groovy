@@ -12,6 +12,7 @@ import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.User as ResUser
 import com.donler.repository.company.CompanyRepository
+import com.donler.repository.trend.TopicRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
@@ -52,6 +53,9 @@ class UserController {
 
     @Autowired
     OSSService ossService
+
+    @Autowired
+    TopicRepository topicRepository
 
 
 
@@ -186,7 +190,11 @@ class UserController {
                         id: company?.id,
                         name: company?.name,
                         imageUrl: company?.image
-                ) : null
+                ) : null,
+                topicsnum: user?.topics?.size(),
+                votesnum: user?.votes?.size(),
+                activitiesnum: user?.activities?.size()
+
         )
     }
 }

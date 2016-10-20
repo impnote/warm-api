@@ -34,4 +34,11 @@ class User {
     String email
     @ApiModelProperty(notes = "公司")
     SimpleCompanyModel company
+    @ApiModelProperty("发布的话题数量")
+    int topicsnum
+    @ApiModelProperty("发布的投票数量")
+    int votesnum
+    @ApiModelProperty("发布的活动数量")
+    int activitiesnum
+
 }

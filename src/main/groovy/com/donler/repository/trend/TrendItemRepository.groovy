@@ -9,5 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
  */
 interface TrendItemRepository extends MongoRepository<TrendItem, String> {
     List<TrendItem> findByCompanyId(def companyId)
+    TrendItem findByTrendId(def trendId)
     Page<TrendItem> findByCompanyId(def companyId, Pageable pageable)
+    Page<TrendItem> findByCreatedAtBefore(Date createdAt,Pageable pageable)
 }

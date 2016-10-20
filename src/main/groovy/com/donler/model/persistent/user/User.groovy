@@ -39,4 +39,10 @@ class User {
     String password
     @JsonIgnore
     String tokenId // token id
+    @ApiModelProperty("发布的话题")
+    List<String> topics //发布的话题
+    @ApiModelProperty("发布的投票")
+    List<String> votes //发布的投票
+    @ApiModelProperty("发布的活动")
+    List<String> activities //发布的活动
 }

@@ -556,6 +556,8 @@ class TrendController {
                 createdAt: activity.createdAt,
                 updatedAt: activity.updatedAt
         ))
+//        currentUser.activities.add(activity.id)
+//        userRepository.save(currentUser)
         return generateResponseActivityByPersistentActivity(activity)
     }
 
@@ -657,7 +659,8 @@ class TrendController {
                 createdAt: savedVote.createdAt,
                 updatedAt: savedVote.updatedAt
         ))
-
+//        currentUser.votes.add(savedVote.id)
+//        userRepository.save(currentUser)
         return generateResponseVoteByPersistentVote(savedVote,currentUser)
 
     }
@@ -862,6 +865,11 @@ class TrendController {
                 createdAt: saveTopic.createdAt,
                 updatedAt: saveTopic.updatedAt
         ))
+        def topicsList = []
+        !!currentUser.topics ? topicsList = currentUser.topics : null
+        topicsList.add(saveTopic?.id)
+        currentUser.topics = topicsList
+        userRepository.save(currentUser)
         return generateResponseTopicByPersistentTopic(saveTopic)
     }
 
@@ -989,7 +997,8 @@ class TrendController {
 
         } else{
         //如果不为空则返回指定动态的前n条记录
-             list = trendItemRepository.findByCreatedAtBefore(perTrend?.createdAt,
+             list = trendItemRepository.findByCreatedAtBefore(
+             perTrend?.createdAt,
             new PageRequest(
                 page ?: 0,
                 limit ?: 10,
