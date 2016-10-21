@@ -12,7 +12,9 @@ import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.User as ResUser
 import com.donler.repository.company.CompanyRepository
+import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.TopicRepository
+import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
@@ -56,6 +58,16 @@ class UserController {
 
     @Autowired
     TopicRepository topicRepository
+
+    @Autowired
+    VoteRepository voteRepository
+
+    @Autowired
+    TrendController trendController
+
+    @Autowired
+    ActivityRepository activityRepository
+
 
 
 
@@ -120,6 +132,59 @@ class UserController {
         def user = req.getAttribute("user") as User
         return generateResponseUserByPersistentUser(user)
 
+    }
+
+    /**
+     * 获取当前用户已发布的投票
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "已经发布的投票", notes = "获取的当前登录用户发布的投票")
+    @RequestMapping(path = "/profile/votes", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getVotes(HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def result = []
+        user?.votes?.each {
+            def vote = voteRepository.findOne(it)
+            result.add(trendController.generateResponseVoteByPersistentVote(vote,user))
+        }
+        return result
+    }
+
+    /**
+     * 获取当前用户已发布的话题
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "已经发布的话题", notes = "获取的当前登录用户发布的话题")
+    @RequestMapping(path = "/profile/topics", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getTopics(HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def result = []
+        user?.topics?.each {
+            def topic = topicRepository.findOne(it)
+            result.add(trendController.generateResponseTopicByPersistentTopic(topic))
+        }
+        return result
+    }
+
+    /**
+     * 获取当前用户已发布的活动
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "已经发布的活动", notes = "获取的当前登录用户发布的活动")
+    @RequestMapping(path = "/profile/activities", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getActivities(HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def result = []
+        user?.topics?.each {
+            def activity = activityRepository.findOne(it)
+            result.add(trendController.generateResponseActivityByPersistentActivity(activity,user))
+        }
     }
 
     /**
@@ -191,9 +256,9 @@ class UserController {
                         name: company?.name,
                         imageUrl: company?.image
                 ) : null,
-                topicsnum: user?.topics?.size(),
-                votesnum: user?.votes?.size(),
-                activitiesnum: user?.activities?.size()
+                topicsnum: !!user?.topics?.size() ?  user?.topics?.size() : 0,
+                votesnum: !!user?.votes?.size() ? user?.votes?.size() : 0,
+                activitiesnum: !!user?.activities?.size() ? user?.activities?.size() : 0
 
         )
     }

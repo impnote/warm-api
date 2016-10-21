@@ -41,7 +41,7 @@ class AuthUserFilter implements Filter {
         def needAuths = [
                 ~/\/trend.*/, // 动态中的所有路由
                 ~/\/team.*/, // 群组中的所有路由
-                ~/\/user\/profile/ // 获取个人资料
+                ~/\/user\/profile.*/ // 获取个人资料
         ]
 
         /**
@@ -53,7 +53,9 @@ class AuthUserFilter implements Filter {
                 ~/\/user\/profile/, // 获取个人资料的get请求
                 ~/\/trend\/showtime\/list/, //根据指定id分页获取瞬间之前的瞬间
                 ~/\/trend\/vote\/list/, //根据指定id分页获取瞬间之前的瞬间
-                ~/\/trend\/list\/all/
+                ~/\/trend\/list\/all/, //获取所有的动态
+                ~/\/user\/profile\/votes/ //获取当前登录用户发布过的投票
+
         ]
 
 

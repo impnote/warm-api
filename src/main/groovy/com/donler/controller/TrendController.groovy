@@ -556,8 +556,11 @@ class TrendController {
                 createdAt: activity.createdAt,
                 updatedAt: activity.updatedAt
         ))
-//        currentUser.activities.add(activity.id)
-//        userRepository.save(currentUser)
+        def activityList = []
+        !!currentUser?.activities ? activityList = currentUser?.activities : null
+        activityList.add(activity?.id)
+        currentUser.activities = activityList
+        userRepository.save(currentUser)
         return generateResponseActivityByPersistentActivity(activity)
     }
 
@@ -659,8 +662,11 @@ class TrendController {
                 createdAt: savedVote.createdAt,
                 updatedAt: savedVote.updatedAt
         ))
-//        currentUser.votes.add(savedVote.id)
-//        userRepository.save(currentUser)
+        def votesList = []
+        !!currentUser.votes ? votesList = currentUser?.votes : null
+        votesList.add(savedVote?.id)
+        currentUser?.votes = votesList
+        userRepository.save(currentUser)
         return generateResponseVoteByPersistentVote(savedVote,currentUser)
 
     }
@@ -866,9 +872,9 @@ class TrendController {
                 updatedAt: saveTopic.updatedAt
         ))
         def topicsList = []
-        !!currentUser.topics ? topicsList = currentUser.topics : null
+        !!currentUser?.topics ? topicsList = currentUser?.topics : null
         topicsList.add(saveTopic?.id)
-        currentUser.topics = topicsList
+        currentUser?.topics = topicsList
         userRepository.save(currentUser)
         return generateResponseTopicByPersistentTopic(saveTopic)
     }
