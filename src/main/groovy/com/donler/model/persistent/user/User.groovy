@@ -45,4 +45,6 @@ class User {
     List<String> votes //发布的投票
     @ApiModelProperty("发布的活动")
     List<String> activities //发布的活动
+    @ApiModelProperty("我的同事/通讯录")
+    List<String> addressBook
 }

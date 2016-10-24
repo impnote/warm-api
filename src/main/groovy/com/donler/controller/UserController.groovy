@@ -5,6 +5,7 @@ import com.donler.exception.BadRequestException
 import com.donler.exception.DatabaseDuplicateException
 import com.donler.exception.NotFoundException
 import com.donler.model.SimpleCompanyModel
+import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
 import com.donler.model.request.user.UserLoginRequestModel
@@ -15,6 +16,7 @@ import com.donler.repository.company.CompanyRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.TopicRepository
 import com.donler.repository.trend.VoteRepository
+import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.MD5Util
@@ -24,7 +26,10 @@ import com.donler.service.ValidationUtil
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import net.sf.json.JSON
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Required
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -67,6 +72,9 @@ class UserController {
 
     @Autowired
     ActivityRepository activityRepository
+
+    @Autowired
+    ColleagueItemRepository colleagueItemRepository
 
 
 
@@ -118,6 +126,50 @@ class UserController {
                     companyId: !!company ? company?.id : null
             ))
         }
+    }
+
+    @ApiOperation(value = "添加备注", notes = "为我的同事添加备注")
+    @RequestMapping(path = "/profile/add-memo", method = RequestMethod.POST)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def addMemo(@RequestParam(required = true) String newMemo,
+                @RequestParam String colleagueId,
+                HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def colleague = userRepository.findOne(colleagueId)
+        def currentColItem = colleagueItemRepository.findByColleagueId(colleagueId)
+        if (!currentColItem) {
+            def newList
+            def item = colleagueItemRepository.save(new ColleagueItem(
+                    colleagueId: colleagueId,
+                    colNickName: colleague.nickname,
+                    phoneNum: colleague.phone,
+                    avatar: colleague.avatar,
+                    memo: newMemo
+            ))
+            !!user.addressBook ? newList = user.addressBook :null
+            newList.add(item.id)
+            user.addressBook = newList
+            user.addressBook.each {
+                def current = colleagueItemRepository.findOne(it)
+                if (!current) {
+                    user.addressBook.remove(it)
+                }
+                userRepository.save(user)
+            }
+            userRepository.save(user)
+        } else {
+            currentColItem.memo = newMemo
+            colleagueItemRepository.save(currentColItem)
+            user.addressBook.each {
+                def current = colleagueItemRepository.findOne(it)
+                if (!current) {
+                    user.addressBook.remove(it)
+                }
+                userRepository.save(user)
+            }
+        }
+
+        return generateResponseAddressBookByPersistentUser(user)
     }
 
     /**
@@ -256,10 +308,21 @@ class UserController {
                         name: company?.name,
                         imageUrl: company?.image
                 ) : null,
-                topicsnum: !!user?.topics?.size() ?  user?.topics?.size() : 0,
-                votesnum: !!user?.votes?.size() ? user?.votes?.size() : 0,
-                activitiesnum: !!user?.activities?.size() ? user?.activities?.size() : 0
+                topicsNum: !!user?.topics?.size() ?  user?.topics?.size() : 0,
+                votesNum: !!user?.votes?.size() ? user?.votes?.size() : 0,
+                activitiesNum: !!user?.activities?.size() ? user?.activities?.size() : 0
 
         )
+    }
+
+    def generateResponseAddressBookByPersistentUser(User user) {
+         def addBook
+         addBook = (user?.addressBook?.collect {
+             def  item = colleagueItemRepository.findOne(it)
+             return item
+
+                })
+        return addBook as JSON
+
     }
 }

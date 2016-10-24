@@ -1,6 +1,7 @@
 package com.donler.model.response
 
 import com.donler.model.SimpleCompanyModel
+import com.donler.model.persistent.user.ColleagueItem
 import groovy.transform.ToString
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.annotation.Id
@@ -35,10 +36,11 @@ class User {
     @ApiModelProperty(notes = "公司")
     SimpleCompanyModel company
     @ApiModelProperty("发布的话题数量")
-    int topicsnum
+    int topicsNum
     @ApiModelProperty("发布的投票数量")
-    int votesnum
+    int votesNum
     @ApiModelProperty("发布的活动数量")
-    int activitiesnum
-
+    int activitiesNum
+    @ApiModelProperty("我的同事/通讯录")
+    List<ColleagueItem> addressBook
 }
