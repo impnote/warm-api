@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletRequest
 @RestController
 @RequestMapping("/team")
 @Api(value = "team", tags = ["群组"])
-class TeamController {
+class  TeamController {
 
     @Autowired
     TeamRepository teamRepository

@@ -128,7 +128,14 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "添加备注", notes = "为我的同事添加备注")
+    /**
+     * 添加或修改备注
+     * @param newMemo
+     * @param colleagueId
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "添加备注", notes = "根据传入的colleagueId,对我的同事进行备注,colleagueId为该同事的用户Id")
     @RequestMapping(path = "/profile/add-memo", method = RequestMethod.POST)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def addMemo(@RequestParam(required = true) String newMemo,
@@ -171,6 +178,8 @@ class UserController {
 
         return generateResponseAddressBookByPersistentUser(user)
     }
+
+
 
     /**
      * 获取个人资料
