@@ -126,7 +126,7 @@ class  TeamController {
                         name: company?.name,
                         imageUrl: company?.image
                 ) : null,
-                peopleCount: team?.peopleCount,
+                peopleCount: team?.members?.size(),
                 desc: team?.desc,
                 image: team?.image,
                 createdAt: team?.createdAt,

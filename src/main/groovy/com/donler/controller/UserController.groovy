@@ -13,6 +13,7 @@ import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.User as ResUser
 import com.donler.repository.company.CompanyRepository
+import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
 import com.donler.repository.trend.TopicRepository
 import com.donler.repository.trend.VoteRepository
@@ -23,8 +24,10 @@ import com.donler.service.MD5Util
 import com.donler.service.OSSService
 import com.donler.service.TokenService
 import com.donler.service.ValidationUtil
+import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
@@ -75,6 +78,9 @@ class UserController {
 
     @Autowired
     ColleagueItemRepository colleagueItemRepository
+
+    @Autowired
+    TeamRepository teamRepository
 
 
 
@@ -246,6 +252,29 @@ class UserController {
             def activity = activityRepository.findOne(it)
             result.add(trendController.generateResponseActivityByPersistentActivity(activity,user))
         }
+    }
+
+    /**
+     * 选择加入群组
+     * @param userId
+     * @param teamId
+     * @return
+     */
+    @ApiModelProperty(value = "加入群组", notes = "根据传入的群组id,选择加入群组")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @RequestMapping(path = "/{userId}/choose/team/{teamId}", method = RequestMethod.GET)
+    def chooseTeam(@PathVariable String userId, @PathVariable String teamId) {
+        def user = !!userId ? userRepository.findOne(userId) : null
+        def team = !!teamId ? teamRepository.findOne(teamId) : null
+        if (!user) {
+            throw new NotFoundException("id为 ${userId} 的用户不存在")
+        }
+        if (!team) {
+            throw new NotFoundException("id为 ${teamId} 的群组不存在")
+        }
+        team.members.add(user.id)
+        teamRepository.save(team)
+        return ResponseMsg.ok("加入成功")
     }
 
     /**
