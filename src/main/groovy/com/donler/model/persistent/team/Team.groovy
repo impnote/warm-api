@@ -31,6 +31,6 @@ class Team {
     Date updatedAt // 更新时间
 
     @ApiModelProperty("群组成员")
-    List<String> members //群组成员
+    List<String> members = []//群组成员
 
 }

@@ -24,4 +24,9 @@ class ResponseMsg {
     static error(def msg, def code) {
         return new ResponseMsg(msg: msg, statusCode: code)
     }
+
+    static ok(String msg, Integer statusCode, def data) {
+        return new ResponseMsg(msg: msg, statusCode: statusCode, data: data)
+
+    }
 }

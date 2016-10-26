@@ -47,4 +47,6 @@ class User {
     List<String> activities //发布的活动
     @ApiModelProperty("我的同事/通讯录")
     List<String> addressBook
+    @ApiModelProperty("我的群组")
+    List<String> myGroup = [] //我的群组
 }

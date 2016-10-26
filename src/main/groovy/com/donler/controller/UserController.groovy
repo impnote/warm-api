@@ -5,6 +5,7 @@ import com.donler.exception.BadRequestException
 import com.donler.exception.DatabaseDuplicateException
 import com.donler.exception.NotFoundException
 import com.donler.model.SimpleCompanyModel
+import com.donler.model.SimpleTeamModel
 import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
@@ -252,6 +253,7 @@ class UserController {
             def activity = activityRepository.findOne(it)
             result.add(trendController.generateResponseActivityByPersistentActivity(activity,user))
         }
+        return result
     }
 
     /**
@@ -260,7 +262,7 @@ class UserController {
      * @param teamId
      * @return
      */
-    @ApiModelProperty(value = "加入群组", notes = "根据传入的群组id,选择加入群组")
+    @ApiOperation(value = "加入群组", notes = "根据传入的群组id,选择加入群组", response = SimpleTeamModel.class)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/{userId}/choose/team/{teamId}", method = RequestMethod.GET)
     def chooseTeam(@PathVariable String userId, @PathVariable String teamId) {
@@ -272,9 +274,30 @@ class UserController {
         if (!team) {
             throw new NotFoundException("id为 ${teamId} 的群组不存在")
         }
+        for(String member : team.members){
+            if (user.id == member){
+                return ResponseMsg.ok("你已加入该群组",200,gengenerateResponseMyGroupByPersistentUser(user))
+            }
+        }
         team.members.add(user.id)
         teamRepository.save(team)
-        return ResponseMsg.ok("加入成功")
+
+        user.myGroup.add(team.id)
+        userRepository.save(user)
+        return ResponseMsg.ok(gengenerateResponseMyGroupByPersistentUser(user))
+    }
+
+    /**
+     * 获取当前登录用户的群组列表
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "获取当前用的群组", notes = "根据当前登录的用户,获取群组列表", response = SimpleTeamModel.class)
+    @RequestMapping(path = "{{userId}/profile/get-myGroup", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getMyGroup(HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        return gengenerateResponseMyGroupByPersistentUser(user)
     }
 
     /**
@@ -353,14 +376,32 @@ class UserController {
         )
     }
 
+    /**
+     * 根据持久化User的addressBook生成响应的AddressBook
+     * @param user
+     * @return
+     */
     def generateResponseAddressBookByPersistentUser(User user) {
          def addBook
-         addBook = (user?.addressBook?.collect {
+         addBook = user?.addressBook?.collect {
              def  item = colleagueItemRepository.findOne(it)
              return item
 
-                })
+                }
         return addBook as JSON
 
+    }
+
+    def gengenerateResponseMyGroupByPersistentUser(User user){
+        def myGroup
+        myGroup = user?.myGroup?.collect {
+            def item = teamRepository.findOne(it)
+            return new SimpleTeamModel(
+                    id: item.id,
+                    name: item.name,
+                    imageUrl: item.image
+            )
+        }
+        return myGroup as JSON
     }
 }
