@@ -371,7 +371,8 @@ class UserController {
                 ) : null,
                 topicsNum: !!user?.topics?.size() ?  user?.topics?.size() : 0,
                 votesNum: !!user?.votes?.size() ? user?.votes?.size() : 0,
-                activitiesNum: !!user?.activities?.size() ? user?.activities?.size() : 0
+                activitiesNum: !!user?.activities?.size() ? user?.activities?.size() : 0,
+
 
         )
     }

@@ -444,7 +444,8 @@ class TrendController {
                     String voteId,
             @ApiParam("话题id")
             @RequestParam(required = false)
-                    String topicId
+                    String topicId,
+            HttpServletRequest req
     ) {
         def querys = [activityId: activityId, showtimeId: showtimeId, voteId: voteId, topicId: topicId]
         def newQuerys = [:]
@@ -459,9 +460,21 @@ class TrendController {
             newQuerys.each { key, value ->
                 switch (key) {
                     case 'activityId':
+                        def activity = !!value ? activityRepository.findOne(value as String) : null
+                        if (!!activity) {
+                            result = !!activity?.comments ? activity?.comments.toArray().collect { inlineValue ->
+                                def comment = !!inlineValue ? commentArrItemRepository.findOne(inlineValue) : null
+                                if (!!inlineValue) {
+                                    return generateResponseCommentArrItemByPersistentCommentArrItem(comment)
+                                }
+                            } : []
+                        } else {
+                            throw new AttrNotValidException("请检查传入的activityId是否正确")
+                        }
                         break
                     case 'showtimeId':
-                        def showtime = !!value ? showtimeRepository.findOne(value) : null
+
+                        def showtime = !!value ? showtimeRepository.findOne(value as String ) : null
                         if (!!showtime) {
                             result = !!showtime?.comments ? showtime?.comments.toArray().collect { inlineValue ->
                                 def comment = !!inlineValue ? commentArrItemRepository.findOne(inlineValue) : null
@@ -471,6 +484,33 @@ class TrendController {
                             } : []
                         } else {
                             throw new AttrNotValidException("请检查传入的showtimeId是否正确")
+                        }
+                        break
+                    case 'voteId':
+                        def vote = !!value ? voteRepository.findOne(value as String) : null
+                        if (!!vote) {
+                            result = !!vote?.comments ? vote?.comments.toArray().collect { inlineValue ->
+                                def comment = !!inlineValue ? commentArrItemRepository.findOne(inlineValue) : null
+                                if (!!inlineValue) {
+                                    return generateResponseCommentArrItemByPersistentCommentArrItem(comment)
+                                }
+                            } : []
+                        } else {
+                            throw new AttrNotValidException("请检查传入的voteId是否正确")
+                        }
+                        break
+                    case 'topicId':
+                        def topic = !!value ? topicRepository.findOne(value as String) : null
+                        if (!!topic) {
+                            result = !!topic.comments ? topic?.comments.toArray().collect { inlineValue ->
+                                def comment = !!inlineValue ? commentArrItemRepository.findOne(inlineValue) : null
+                                if (!!inlineValue) {
+                                    return generateResponseCommentArrItemByPersistentCommentArrItem(comment)
+                                }
+
+                            } : []
+                        }else {
+                            throw new AttrNotValidException("请检查传入的voteId是否正确")
                         }
                         break
                     default:
