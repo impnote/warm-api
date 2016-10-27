@@ -249,7 +249,7 @@ class UserController {
     def getActivities(HttpServletRequest req) {
         def user = req.getAttribute("user") as User
         def result = []
-        user?.topics?.each {
+        user?.activities?.each {
             def activity = activityRepository.findOne(it)
             result.add(trendController.generateResponseActivityByPersistentActivity(activity,user))
         }
@@ -293,7 +293,7 @@ class UserController {
      * @return
      */
     @ApiOperation(value = "获取当前用的群组", notes = "根据当前登录的用户,获取群组列表", response = SimpleTeamModel.class)
-    @RequestMapping(path = "{{userId}/profile/get-myGroup", method = RequestMethod.GET)
+    @RequestMapping(path = "/profile/get-myGroup", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def getMyGroup(HttpServletRequest req) {
         def user = req.getAttribute("user") as User
