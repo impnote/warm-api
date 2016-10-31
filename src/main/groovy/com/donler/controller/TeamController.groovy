@@ -74,6 +74,9 @@ class  TeamController {
                 updatedAt: new Date()
 
         ))
+        currentUser.myGroup.add(savedTeam.id)
+        currentUser.myGroup.unique()
+        userRepository.save(currentUser)
         return generateResponseByPersistentTeam(savedTeam)
     }
 

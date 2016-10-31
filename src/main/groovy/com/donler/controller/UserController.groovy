@@ -276,15 +276,16 @@ class UserController {
         }
         for(String member : team.members){
             if (user.id == member){
-                return ResponseMsg.ok("你已加入该群组",200,gengenerateResponseMyGroupByPersistentUser(user))
+                return ResponseMsg.ok("你已加入该群组",200,generateResponseMyGroupByPersistentUser(user))
             }
         }
         team.members.add(user.id)
         teamRepository.save(team)
 
         user.myGroup.add(team.id)
+        user.myGroup.unique()
         userRepository.save(user)
-        return ResponseMsg.ok(gengenerateResponseMyGroupByPersistentUser(user))
+        return ResponseMsg.ok(generateResponseMyGroupByPersistentUser(user))
     }
 
     /**
@@ -292,12 +293,12 @@ class UserController {
      * @param req
      * @return
      */
-    @ApiOperation(value = "获取当前用的群组", notes = "根据当前登录的用户,获取群组列表", response = SimpleTeamModel.class)
+    @ApiOperation(value = "获取当前用户的群组", notes = "根据当前登录的用户,获取群组列表", response = SimpleTeamModel.class)
     @RequestMapping(path = "/profile/get-myGroup", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def getMyGroup(HttpServletRequest req) {
         def user = req.getAttribute("user") as User
-        return gengenerateResponseMyGroupByPersistentUser(user)
+        return generateResponseMyGroupByPersistentUser(user)
     }
 
     /**
@@ -393,7 +394,7 @@ class UserController {
 
     }
 
-    def gengenerateResponseMyGroupByPersistentUser(User user){
+    def generateResponseMyGroupByPersistentUser(User user){
         def myGroup
         myGroup = user?.myGroup?.collect {
             def item = teamRepository.findOne(it)
