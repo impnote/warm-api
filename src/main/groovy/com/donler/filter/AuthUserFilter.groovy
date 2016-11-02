@@ -54,6 +54,8 @@ class AuthUserFilter implements Filter {
                 ~/\/trend\/showtime\/list/, //根据指定id分页获取瞬间之前的瞬间
                 ~/\/trend\/vote\/list/, //根据指定id分页获取瞬间之前的瞬间
                 ~/\/trend\/list\/all/, //获取所有的动态
+                ~/\/trend\/activity\/list/,
+                ~/\/trend\/topic\/list/,
                 ~/\/user\/profile\/votes/, //获取当前登录用户发布过的投票
                 ~/\/user\/profile.*/
 

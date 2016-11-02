@@ -609,7 +609,7 @@ class TrendController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/activity/list/all", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有活动", notes = "获取所有活动信息")
     List<ResActivity> getAllActivitys() {
         List<Activity> list = activityRepository.findAll()
@@ -618,6 +618,56 @@ class TrendController {
             newList << generateResponseActivityByPersistentActivity(it)
         }
         return newList
+    }
+    /**
+    * 分页加载活动
+    * @param activityId
+    * @param page
+    * @param limit
+    * @param req
+    * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "//activity/list", method = RequestMethod.GET)
+    @ApiOperation(value = "分页加载活动", notes = "如果传入置顶的activityId则加载该Id之前的活动,否则获取最新的activity")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    Page<ResActivity> getActivityByLastActivityId(
+            @RequestParam(required = false)
+            @ApiParam("指定活动的id")
+                    String activityId,
+            @RequestParam(required = false)
+            @ApiParam("页数,默认第0页")
+                    Integer page,
+            @RequestParam(required = false)
+            @ApiParam("每页条数,默认10条")
+                    Integer limit, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def perActivity = !!activityId ? activityRepository.findOne(activityId) : null
+        def list
+        if (!perActivity) {
+            // 为空则返回最新的n条
+            list = activityRepository.findByCompanyId(user?.companyId, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt"))
+
+                    )))
+        } else {
+            //不为空返回指定瞬间的前n条记录
+            list =activityRepository.findByCreatedAtBefore(perActivity?.createdAt,
+                    new PageRequest(
+                            page ?: 0,
+                            limit ?: 10,
+                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt"))))
+            )
+        }
+        return  list.map(new Converter() {
+            @Override
+            Object convert(Object source) {
+                return generateResponseActivityByPersistentActivity(source as Activity,user)
+            }
+        })
+
     }
 
     /**
@@ -629,6 +679,7 @@ class TrendController {
     @RequestMapping(value = "/activity/{activityId}", method = RequestMethod.GET)
     @ApiOperation(value = "获取活动详情", notes = "根据活动的id获取活动的详情")
     ResActivity getActivityById(@PathVariable("activityId") String activityId) {
+
         return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
     }
 /**
@@ -996,6 +1047,50 @@ class TrendController {
         return newList
     }
 
+    /**
+      * 分页加载话题
+      * @param topicId
+      * @param page
+      * @param limit
+      * @param req
+      * @return
+      */
+    @ResponseBody
+    @RequestMapping(value = "/topic/list", method = RequestMethod.GET)
+    @ApiOperation(value = "分页加载话题", notes = "如果传入topicId,则返回该Id之前的话题,否则返回的n条最新的话题")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    Page<ResTopic> getTopicByLastTopicId(
+            @RequestParam(required = false)
+            @ApiParam("指定投票的id")
+                    String topicId,
+            @RequestParam(required = false)
+            @ApiParam("页数,默认第0页")
+                    Integer page,
+            @RequestParam(required = false)
+            @ApiParam("每页条数,默认10条")
+                    Integer limit, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def perTopic = !!topicId ? topicRepository.findOne(topicId) : null
+        def list
+        if (!perTopic) {
+            list = topicRepository.findByCompanyId(user?.companyId, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+        } else {
+            list = topicRepository.findByCreatedAtBefore(perTopic.createdAt, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+
+        }
+        return  list.map(new Converter() {
+            @Override
+        Object convert(Object source) {
+                return generateResponseTopicByPersistentTopic(source as Topic)
+            }
+        })
+    }
    /**
      * 获取所有动态
      * @param page
