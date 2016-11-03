@@ -24,6 +24,7 @@ import com.donler.repository.trend.*
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
+import com.sun.scenario.effect.Offset
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -1076,7 +1078,7 @@ class TrendController {
             list = topicRepository.findByCompanyId(user?.companyId, new PageRequest(
                     page ?: 0,
                     limit ?: 10,
-                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
         } else {
             list = topicRepository.findByCreatedAtBefore(perTopic.createdAt, new PageRequest(
                     page ?: 0,
@@ -1101,7 +1103,7 @@ class TrendController {
     @RequestMapping(value = "/list/all", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有动态", notes = "如果传入trendId则为上拉刷新,不传则为下拉刷新")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def getAllTrend(
+    Page<Object> getAllTrend(
 //                    @RequestBody
 //                    TrendTypeRequestBody body,
                     @RequestParam(required = false)
@@ -1128,8 +1130,6 @@ class TrendController {
         def newList = []
         if (!perTrend){
         // 如果id为空则返回最新的
-//        def list3 = trendItemRepository.findAll()
-//        def list2 = trendItemRepository.findByCompanyId(user?.companyId)
          list = trendItemRepository.findByCompanyId(user?.companyId,
                 new PageRequest(
                 page ?: 0,
@@ -1146,15 +1146,16 @@ class TrendController {
                 new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
 
         }
+
         list.each {
             switch (it.typeEnum) {
                 case Constants.TypeEnum.Showtime:
                     def newShowtime = showtimeRepository.findOne(it.trendId)
-                    newList.add(generateResponseShowtimeByPersistentShowtime(newShowtime))
+                    newList.add(generateResponseShowtimeByPersistentShowtime(newShowtime,user))
                     break
                 case Constants.TypeEnum.Activity:
                     def newActivity = activityRepository.findOne(it.trendId)
-                    newList.add(generateResponseActivityByPersistentActivity(newActivity))
+                    newList.add(generateResponseActivityByPersistentActivity(newActivity,user))
                     break
                 case Constants.TypeEnum.Topic:
                     def newTopic = topicRepository.findOne(it.trendId)
@@ -1166,8 +1167,26 @@ class TrendController {
                     break
             }
         }
-        return newList
-        //测试macbookpro
+//        return newList
+//        list.content.removeAll()
+//        list.content.addAll(newList)
+        def result = []
+        def dic = [:]
+        def d = []
+        dic["last"] = list.last
+        dic["first"] = list.first
+        dic["totalElement"] = list.totalElements
+        dic["totalPages"] = list.totalPages
+        dic["size"] = list.size
+        dic["number"] = list.number
+        dic["numberOfElements"] = list.numberOfElements
+        def sort
+        sort = list.sort
+        dic["sort"] = sort
+        d.add(dic)
+        result.add(newList)
+        result.add(d)
+        return result
 
 //        newList.each {
 //            println(it.createdAt)
@@ -1201,6 +1220,11 @@ class TrendController {
 
 
     }
+
+//    Page<Object> pagingTrend(def list, Pageable pageable) {
+//        return list as Page<Object>
+//
+//    }
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
