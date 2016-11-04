@@ -1103,7 +1103,7 @@ class TrendController {
     @RequestMapping(value = "/list/all", method = RequestMethod.GET)
     @ApiOperation(value = "获取所有动态", notes = "如果传入trendId则为上拉刷新,不传则为下拉刷新")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    Page<Object> getAllTrend(
+    def getAllTrend(
 //                    @RequestBody
 //                    TrendTypeRequestBody body,
                     @RequestParam(required = false)
