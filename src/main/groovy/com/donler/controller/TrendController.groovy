@@ -1104,8 +1104,7 @@ class TrendController {
     @ApiOperation(value = "获取所有动态", notes = "如果传入trendId则为上拉刷新,不传则为下拉刷新")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def getAllTrend(
-//                    @RequestBody
-//                    TrendTypeRequestBody body,
+
                     @RequestParam(required = false)
                     @ApiParam("")
                                 String trendId,
@@ -1117,14 +1116,6 @@ class TrendController {
                             Integer limit,
                     HttpServletRequest req) {
         def user = req.getAttribute("user") as User
-//        def querys =  [activityId: body?.activityId, voteId: body?.voteId, showtimeId: body?.showtimeId, topicId: body?.topicId]
-//        def newQuerys = [:]
-//        querys.each { key , value ->
-//            println("value${value}")
-//            if (value != null) {
-//                newQuerys.put(key , value)
-//            }
-//        }
         def perTrend = !!trendId ? trendItemRepository.findByTrendId(trendId) : null
         Page<TrendItem> list
         def newList = []
@@ -1167,12 +1158,8 @@ class TrendController {
                     break
             }
         }
-//        return newList
-//        list.content.removeAll()
-//        list.content.addAll(newList)
-        def result = []
         def dic = [:]
-        def d = []
+        dic["content"] = newList
         dic["last"] = list.last
         dic["first"] = list.first
         dic["totalElement"] = list.totalElements
@@ -1183,48 +1170,8 @@ class TrendController {
         def sort
         sort = list.sort
         dic["sort"] = sort
-        d.add(dic)
-        result.add(newList)
-        result.add(d)
-        return result
-
-//        newList.each {
-//            println(it.createdAt)
-//        }
-//        for (int i = 0; i < newList.size(); i++) {
-//            println(newList.get(i).createdAt)
-//        }
-//        List<ResActivity> activityList = !!user?.companyId ? activityRepository.findByCompanyId(user?.companyId) : []
-//        List<ResVote> voteList = !!user?.companyId ? voteRepository.findByCompanyId(user?.companyId) : []
-//        List<ResTopic> topicList = !!user?.companyId ? topicRepository.findByCompanyId(user?.companyId) : []
-//        List<ResShowtime> showtimeList = !!user?.companyId ? showtimeRepository.findByCompanyId(user?.companyId) : []
-//        newList.addAll(activityList)
-//        newList.addAll(voteList)
-//        newList.addAll(topicList)
-//        newList.addAll(showtimeList)
-//        newList.sort(new Comparator() {
-//            @Override
-//            int compare(Object o1, Object o2) {
-//                Date date1 = (Date) (o1.createdAt)
-//                Date date2 = (Date) (o2.createdAt)
-//                return date1.compareTo(date2)
-//            }
-//        })
-//
-////        newList.each {
-////            println(it.createdAt)
-////        }
-//        for (int i = 0; i < newList.size(); i++) {
-//            println(newList.get(i).createdAt)
-//        }
-
-
+        return dic
     }
-
-//    Page<Object> pagingTrend(def list, Pageable pageable) {
-//        return list as Page<Object>
-//
-//    }
 
     /**
      * 根据传入的持久化瞬间生成res瞬间
@@ -1375,14 +1322,6 @@ class TrendController {
                     def comment = !!it ? commentArrItemRepository.findOne(it) : null
                     return !!comment ? generateResponseCommentArrItemByPersistentCommentArrItem(comment) : null
                 }
-//                membersId: activity?.menbersId?.collect {
-//                    def user = !!it ? userRepository.findOne(it) : null
-//                    return  !!user ? new SimpleUserModel(
-//                            id: user?.id,
-//                            nickname: user?.nickname,
-//                            avatar: user?.avatar
-//                    ) : null
-//                }
         )
     }
 
@@ -1482,24 +1421,6 @@ class TrendController {
     ResVote generateResponseVoteByPersistentVote(Vote vote, User user) {
         def res = generateResponseVoteByPersistentVote(vote)
         res.isVoted = false
-//        vote.options.each {
-//            def currentOption = voteOptionInfoRepository.findOne(it)
-//            currentOption.votedUserIds.each {
-//                if (user.id == it) {
-//                    res.isVoted = true
-//
-//                }
-//            }
-//        }
-//        for (String options : res.options) {
-//            def currentOption = voteOptionInfoRepository.findOne(options)
-//            for (String userIds : currentOption?.votedUserIds) {
-//                if (user?.id == userIds) {
-//                    res.isVoted = true
-//                    break
-//                }
-//            }
-//        }
         for (int i = 0; vote.options.size() > i; i++) {
             def currentOption = voteOptionInfoRepository.findOne(vote.options.get(i))
             for (int j = 0; currentOption.votedUserIds.size() > j; j++) {
