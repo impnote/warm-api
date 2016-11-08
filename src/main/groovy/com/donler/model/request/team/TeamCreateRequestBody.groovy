@@ -13,7 +13,6 @@ class TeamCreateRequestBody {
     @NotNull
     @ApiModelProperty(value = "群组名称", example = "篮球小队")
     String name // 群组名称
-    @NotNull
     @ApiModelProperty("群组描述")
     String desc // 群组描述
 
