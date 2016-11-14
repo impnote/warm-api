@@ -678,11 +678,12 @@ class TrendController {
      * @return
      */
     @ResponseBody
-    @RequestMapping(value = "/activity/{activityId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/activity/detail", method = RequestMethod.GET)
     @ApiOperation(value = "获取活动详情", notes = "根据活动的id获取活动的详情")
-    ResActivity getActivityById(@PathVariable("activityId") String activityId) {
-
-        return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId))
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getActivityById(@RequestParam String activityId, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        return generateResponseActivityByPersistentActivity(activityRepository.findOne(activityId),user)
     }
 /**
 * 报名活动

@@ -2,6 +2,7 @@ package com.donler.controller
 
 import com.donler.exception.AttrNotValidException
 import com.donler.model.SimpleCompanyModel
+import com.donler.model.SimpleTeamModel
 import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.user.User
@@ -112,7 +113,14 @@ class  TeamController {
         })
     }
 
+//    @ApiOperation(value = "获取群组列表(分页)", notes = "获取包含某关键字的群组列表或者该用户所在公司的全部群组列表")
+//    @RequestMapping(path = "/team/detail",method = RequestMethod.GET)
 
+    /**
+     * 更具持久化生成响应的team model
+     * @param team
+     * @return
+     */
     ResTeam generateResponseByPersistentTeam(Team team) {
         def author = userRepository.findOne(team?.authorId)
         def company = companyRepository.findOne(team?.companyId)
@@ -135,6 +143,18 @@ class  TeamController {
                 createdAt: team?.createdAt,
                 updatedAt: team?.updatedAt
         )
+    }
+
+    def generateResponseByPersistentTeam(User user) {
+        def teamArr = user.myGroup
+        def result = !!teamArr ? teamArr.each {
+            def currentTeam = teamRepository.findOne(it)
+            return new SimpleTeamModel(
+                id: currentTeam?.id,
+                name: currentTeam?.name,
+                imageUrl: currentTeam?.image)
+            } : null
+        return result
     }
 
 
