@@ -697,7 +697,7 @@ class TrendController {
     def signUpActivity(@RequestParam String activityId, HttpServletRequest req ) {
         def user = req.getAttribute("user") as User
         def currentActivity = !!activityId ? activityRepository.findOne(activityId) : null
-        def members = currentActivity.members
+        def members = !!currentActivity.members ?  currentActivity.members : []
         if (generateResponseActivityByPersistentActivity(currentActivity, user).isSignUp) {
             members.remove(user?.id)
             currentActivity.members = members
