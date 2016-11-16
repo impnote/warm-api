@@ -1534,7 +1534,6 @@ class TrendController {
                 }
 
         )
-
     }
 
 

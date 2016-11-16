@@ -43,4 +43,6 @@ class User {
     int activitiesNum
     @ApiModelProperty("我的同事/通讯录")
     List<ColleagueItem> addressBook
+    @ApiModelProperty("备注")
+    String remark
 }

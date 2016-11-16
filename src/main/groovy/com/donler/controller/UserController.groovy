@@ -6,6 +6,7 @@ import com.donler.exception.DatabaseDuplicateException
 import com.donler.exception.NotFoundException
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleTeamModel
+import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
@@ -34,11 +35,16 @@ import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Required
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
+import java.text.Collator
+
 /**
  * Created by jason on 5/27/16.
  */
@@ -186,6 +192,22 @@ class UserController {
         return generateResponseAddressBookByPersistentUser(user)
     }
 
+    @ApiOperation(value = "我的同事", notes = "获取当前登录用户的同事列表")
+    @RequestMapping(path = "/profile/myColleague", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getMyColleague(HttpServletRequest req) {
+        def user =req.getAttribute("user") as User
+        def list = userRepository.findAllByCompanyId(user.companyId)
+        list.remove(user.id)
+        def result = []
+        list.each {
+            def currentRemark
+            currentRemark = !!user.addressBook.contains(it.id) ? colleagueItemRepository.findByColleagueId(it.id).memo : null
+           result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
+        }
+        return result
+
+    }
 
 
     /**
@@ -405,5 +427,16 @@ class UserController {
             )
         }
         return myGroup as JSON
+    }
+
+    static def generateResponseSimpleUserModelByPersistentUser(User user, String remark) {
+        def result = new SimpleUserModel(
+                id: user.id,
+                nickname: user.nickname,
+                avatar: user.avatar,
+                phone: user.phone,
+                remark: remark
+        )
+        return result
     }
 }
