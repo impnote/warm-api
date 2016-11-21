@@ -202,7 +202,7 @@ class UserController {
         !!list ? list.each {
             if (it.id != user.id) {
                 def currentRemark
-                currentRemark = !user?.addressBook || !!user?.addressBook?.contains(it?.id) ? colleagueItemRepository.findByColleagueId(it?.id).memo : null
+                currentRemark = !!user.addressBook ? (!!user?.addressBook?.contains(it?.id) ? colleagueItemRepository.findByColleagueId(it?.id).memo : null) : null
                 result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
             }
         } : null
