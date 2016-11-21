@@ -192,18 +192,19 @@ class UserController {
         return generateResponseAddressBookByPersistentUser(user)
     }
 
-    @ApiOperation(value = "我的同事", notes = "获取当前登录用户的同事列表")
+    @ApiOperation(value = "我的同事", notes = "获取当前登录用户的同事列表",response = SimpleUserModel.class)
     @RequestMapping(path = "/profile/myColleague", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def getMyColleague(HttpServletRequest req) {
         def user =req.getAttribute("user") as User
         def list = userRepository.findAllByCompanyId(user.companyId)
-        list.remove(user.id)
         def result = []
         list.each {
-            def currentRemark
-            currentRemark = !!user.addressBook.contains(it.id) ? colleagueItemRepository.findByColleagueId(it.id).memo : null
-           result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
+            if (it.id != user.id) {
+                def currentRemark
+                currentRemark = !!user.addressBook.contains(it.id) ? colleagueItemRepository.findByColleagueId(it.id).memo : null
+                result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
+            }
         }
         return result
 
