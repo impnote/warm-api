@@ -199,13 +199,13 @@ class UserController {
         def user =req.getAttribute("user") as User
         def list = userRepository.findAllByCompanyId(user.companyId)
         def result = []
-        list.each {
+        !!list ? list.each {
             if (it.id != user.id) {
                 def currentRemark
                 currentRemark = !!user.addressBook.contains(it.id) ? colleagueItemRepository.findByColleagueId(it.id).memo : null
                 result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
             }
-        }
+        } : null
         return result
 
     }
