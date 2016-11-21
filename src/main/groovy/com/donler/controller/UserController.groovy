@@ -192,6 +192,11 @@ class UserController {
         return generateResponseAddressBookByPersistentUser(user)
     }
 
+    /**
+     * 获取我的同事
+     * @param req
+     * @return
+     */
     @ApiOperation(value = "我的同事", notes = "获取当前登录用户的同事列表",response = SimpleUserModel.class)
     @RequestMapping(path = "/profile/myColleague", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
@@ -424,7 +429,8 @@ class UserController {
             return new SimpleTeamModel(
                     id: item.id,
                     name: item.name,
-                    imageUrl: item.image
+                    imageUrl: item.image,
+                    isJoined: !!teamRepository.findOne(item.id).members ? (teamRepository.findOne(item.id).members.contains(user.id) ? true : false) : false
             )
         }
         return myGroup as JSON

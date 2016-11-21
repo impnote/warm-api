@@ -91,7 +91,7 @@ class  TeamController {
     @ApiOperation(value = "获取群组列表(分页)", notes = "获取包含某关键字的群组列表或者该用户所在公司的全部群组列表")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/search", method = RequestMethod.GET)
-    Page<ResTeam> searchCompanyByEmailSuffix(
+    Page<SimpleTeamModel> searchCompanyByEmailSuffix(
             @ApiParam(value = "待查询的群组名称关键字,为空则返回该用户所在公司的所有群组")
             @RequestParam(required = false)
                     String teamKeyword,
@@ -105,10 +105,10 @@ class  TeamController {
     ) {
         def currentUser = req.getAttribute("user") as User
         def list = !!teamKeyword ? teamRepository.findByNameLike(teamKeyword, new PageRequest(page ?: 0, limit ?: 10)) : teamRepository.findByCompanyId(currentUser?.companyId, new PageRequest(page ?: 0, limit ?: 10))
-        return list.map(new Converter<Team, ResTeam>() {
+        return list.map(new Converter<Team, SimpleTeamModel>() {
             @Override
-            ResTeam convert(Team source) {
-                return generateResponseByPersistentTeam(source)
+            SimpleTeamModel convert(Team source) {
+                return generateResponseSimpleTeamModelByPersistentTeam(source,currentUser)
             }
         })
     }
@@ -145,17 +145,15 @@ class  TeamController {
         )
     }
 
-    def generateResponseByPersistentTeam(User user) {
-        def teamArr = user.myGroup
-        def result = !!teamArr ? teamArr.each {
-            def currentTeam = teamRepository.findOne(it)
+    static def generateResponseSimpleTeamModelByPersistentTeam(Team team, User user) {
+
             return new SimpleTeamModel(
-                id: currentTeam?.id,
-                name: currentTeam?.name,
-                imageUrl: currentTeam?.image)
-            } : null
-        return result
-    }
+                id: team?.id,
+                name: team?.name,
+                imageUrl: team?.image,
+                isJoined: !!team.members ? team.members.contains(user.id) : false)
+            }
+
 
 
 
