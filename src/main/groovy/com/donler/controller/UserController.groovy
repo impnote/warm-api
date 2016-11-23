@@ -190,7 +190,7 @@ class UserController {
             }
         }
 
-        return generateResponseAddressBookByPersistentUser(user)
+        return generateResponseSimpleUserModelByPersistentUser(user,newMemo)
     }
 
     /**
