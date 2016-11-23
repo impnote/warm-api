@@ -13,8 +13,13 @@ class SimpleUserModel {
     String nickname // 用户昵称
     @ApiModelProperty("用户头像")
     String avatar // 用户头像
+    @ApiModelProperty("真实名字")
+    String realname
     @ApiModelProperty("手机号")
     String phone
     @ApiModelProperty("备注")
     String remark
+    @ApiModelProperty("职位")
+    String job
+
 }

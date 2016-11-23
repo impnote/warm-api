@@ -11,6 +11,7 @@ import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
 import com.donler.model.request.user.UserLoginRequestModel
+import com.donler.model.request.user.UserProfileModifyRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.User as ResUser
@@ -166,7 +167,7 @@ class UserController {
                     avatar: colleague.avatar,
                     memo: newMemo
             ))
-            !!user.addressBook ? newList = user.addressBook :null
+            newList = !!user.addressBook ? user.addressBook : []
             newList.add(item.id)
             user.addressBook = newList
             user.addressBook.each {
@@ -206,8 +207,16 @@ class UserController {
         def result = []
         !!list ? list.each {
             if (it.id != user.id) {
-                def currentRemark
-                currentRemark = !!user.addressBook ? (!!user?.addressBook?.contains(it?.id) ? colleagueItemRepository.findByColleagueId(it?.id).memo : null) : null
+                def currentRemark = ""
+                if (user.addressBook) {
+                    for (int i = 0; i<user.addressBook.size(); i++) {
+                        def currentCol = colleagueItemRepository.findOne(user.addressBook[i])
+                        if (currentCol.colleagueId == it.id) {
+                            currentRemark = currentCol.memo
+                            break
+                        }
+                    }
+                }
                 result.add(generateResponseSimpleUserModelByPersistentUser(it, currentRemark))
             }
         } : null
@@ -364,15 +373,26 @@ class UserController {
 
 
     }
-//TODO 修改个人信息
-//    @RequestMapping(path = "/profile", method = RequestMethod.PUT)
-//    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-//    def modProfile(@Valid @RequestBody UserProfileModifyRequestModel body, HttpServletRequest req) {
-//        def user = req.getAttribute("user") as User
-//
-//
-//        return body
-//    }
+
+    /**
+     * 个人信息更新(昵称/真名/星座/生日/职位)
+     * @param body
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "个人信息更新", notes = "更新(昵称/真名/星座/生日/职位)")
+    @RequestMapping(path = "/profile/update", method = RequestMethod.PUT)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def modProfile(@Valid @RequestBody UserProfileModifyRequestModel body, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        !!body.nickname ? user.nickname = body.nickname : null
+        !!body.realname ? user.realname = body.realname : null
+        !!body.constellation ? user.constellation = body.constellation : null
+        !!body.birthday ? user.birthday = body.birthday : null
+        !!body.job ? user.job = body.job : null
+        userRepository.save(user)
+        return generateResponseUserByPersistentUser(user)
+    }
 
     /**
      * 根据持久化User生成响应的User
@@ -422,6 +442,11 @@ class UserController {
 
     }
 
+    /**
+     * 根据持久化User生成响应的我的群组
+     * @param user
+     * @return
+     */
     def generateResponseMyGroupByPersistentUser(User user){
         def myGroup
         myGroup = user?.myGroup?.collect {
@@ -436,14 +461,24 @@ class UserController {
         return myGroup as JSON
     }
 
+    /**
+     * 根据SimpleUserModel生成响应的我的同事
+     * @param user
+     * @param remark
+     * @return
+     */
     static def generateResponseSimpleUserModelByPersistentUser(User user, String remark) {
         def result = new SimpleUserModel(
                 id: user.id,
                 nickname: user.nickname,
                 avatar: user.avatar,
+                realname: user.realname,
                 phone: user.phone,
-                remark: remark
+                remark: remark,
+                job: user.job
+
         )
         return result
     }
+
 }
