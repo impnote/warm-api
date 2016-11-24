@@ -10,6 +10,7 @@ import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
+import com.donler.model.request.user.UserAddMemoRequestModel
 import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserProfileModifyRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
@@ -34,6 +35,7 @@ import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
+import net.sf.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Required
 import org.springframework.data.domain.Page
@@ -152,13 +154,27 @@ class UserController {
     @ApiOperation(value = "添加备注", notes = "根据传入的colleagueId,对我的同事进行备注,colleagueId为该同事的用户Id")
     @RequestMapping(path = "/profile/add-memo", method = RequestMethod.POST)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def addMemo(@RequestParam(required = true) String newMemo,
-                @RequestParam String colleagueId,
+    def addMemo(@RequestBody UserAddMemoRequestModel body,
                 HttpServletRequest req) {
+        def newMemo = body.memo
+        def colleagueId = body.colleagueId
         def user = req.getAttribute("user") as User
         def colleague = userRepository.findOne(colleagueId)
-        def currentColItem = colleagueItemRepository.findByColleagueId(colleagueId)
-        if (!currentColItem) {
+        def colleagueItemId
+        def colleagueItem
+        boolean remarked = false
+        if (user.addressBook) {
+            for (int i = 0; i < user.addressBook.size(); i++) {
+                def currentItem = colleagueItemRepository.findOne(user.addressBook[i])
+                if (currentItem.colleagueId == colleagueId) {
+                    colleagueItemId = currentItem.id
+                    remarked = true
+                    break
+                }
+            }
+            colleagueItem = colleagueItemRepository.findOne(colleagueItemId)
+        }
+        if (!remarked) {
             def newList
             def item = colleagueItemRepository.save(new ColleagueItem(
                     colleagueId: colleagueId,
@@ -179,8 +195,8 @@ class UserController {
             }
             userRepository.save(user)
         } else {
-            currentColItem.memo = newMemo
-            colleagueItemRepository.save(currentColItem)
+            colleagueItem.memo = newMemo
+            colleagueItemRepository.save(colleagueItem)
             user.addressBook.each {
                 def current = colleagueItemRepository.findOne(it)
                 if (!current) {
@@ -190,7 +206,7 @@ class UserController {
             }
         }
 
-        return generateResponseSimpleUserModelByPersistentUser(user,newMemo)
+        return generateResponseSimpleUserModelByPersistentUser(colleague,newMemo)
     }
 
     /**
@@ -480,5 +496,7 @@ class UserController {
         )
         return result
     }
+
+
 
 }
