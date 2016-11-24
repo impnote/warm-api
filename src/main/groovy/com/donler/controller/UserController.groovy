@@ -160,7 +160,7 @@ class UserController {
         def colleagueId = body.colleagueId
         def user = req.getAttribute("user") as User
         def colleague = userRepository.findOne(colleagueId)
-        def colleagueItemId
+        String colleagueItemId
         def colleagueItem
         boolean remarked = false
         if (user.addressBook) {
@@ -172,9 +172,9 @@ class UserController {
                     break
                 }
             }
-            colleagueItem = colleagueItemRepository.findOne(colleagueItemId)
         }
-        if (!remarked) {
+        colleagueItem = !!colleagueItemId ? colleagueItemRepository.findOne(colleagueItemId) : null
+        if (!colleagueItem) {
             def newList
             def item = colleagueItemRepository.save(new ColleagueItem(
                     colleagueId: colleagueId,
