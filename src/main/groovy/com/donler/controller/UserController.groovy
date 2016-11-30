@@ -15,6 +15,7 @@ import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserProfileModifyRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ResponseMsg
+import com.donler.model.response.Team
 import com.donler.model.response.User as ResUser
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
@@ -29,6 +30,7 @@ import com.donler.service.OSSService
 import com.donler.service.TokenService
 import com.donler.service.ValidationUtil
 import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
+import groovy.xml.QName
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiModelProperty
@@ -38,8 +40,10 @@ import net.sf.json.JSON
 import net.sf.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Required
+import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -47,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import java.text.Collator
+import java.util.function.Predicate
 
 /**
  * Created by jason on 5/27/16.
@@ -309,6 +314,23 @@ class UserController {
         return result
     }
 
+    @ApiOperation(value = "个人页面", notes = "获取当前登录用户的时间轴")
+    @RequestMapping(path = "/profile/timeline", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getPersonalTimeline(
+            @RequestParam(required = false)
+            @ApiParam("页数,默认第0页")
+                    Integer page,
+            @RequestParam(required = false)
+            @ApiParam("每页条数,默认10条")
+                    Integer limit,
+                    HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+
+
+
+    }
+
     /**
      * 选择加入群组
      * @param userId
@@ -349,9 +371,40 @@ class UserController {
     @ApiOperation(value = "获取当前用户的群组", notes = "根据当前登录的用户,获取群组列表", response = SimpleTeamModel.class)
     @RequestMapping(path = "/profile/get-myGroup", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
-    def getMyGroup(HttpServletRequest req) {
+    def getMyGroup(@RequestParam(required = false)
+                       @ApiParam("")
+                               String teamId,
+                   @RequestParam(required = false)
+                       @ApiParam("页数,默认第0页")
+                               Integer page,
+                   @RequestParam(required = false)
+                       @ApiParam("每页条数,默认10条")
+                               Integer limit,
+                    HttpServletRequest req) {
         def user = req.getAttribute("user") as User
-        return generateResponseMyGroupByPersistentUser(user)
+        def list
+        def perteamId = !!teamId ? teamRepository.findOne(teamId) : null
+        if (!perteamId) {
+            list = teamRepository.findByMembersContaining(user.id, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        } else {
+            list = teamRepository.findByMembersContainingAndCreatedAtBefore(user.id,perteamId.createdAt, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        }
+
+
+
+        return list.map(new Converter() {
+            @Override
+            Object convert(Object source) {
+                return generateResponseMyGroupByPersistentUser(source as com.donler.model.persistent.team.Team, user)
+            }
+        })
+
     }
 
     /**
@@ -471,10 +524,20 @@ class UserController {
                     id: item.id,
                     name: item.name,
                     imageUrl: item.image,
-                    isJoined: !!teamRepository.findOne(item.id).members ? (teamRepository.findOne(item.id).members.contains(user.id) ? true : false) : false
+                    isJoined: !!teamRepository.findOne(item.id).members ? teamRepository.findOne(item.id).members.contains(user.id) : false
             )
         }
         return myGroup as JSON
+    }
+
+    def generateResponseMyGroupByPersistentUser(com.donler.model.persistent.team.Team team,User user){
+            return new SimpleTeamModel(
+                    id: team.id,
+                    name: team.name,
+                    imageUrl: team.image,
+                    isJoined: !!teamRepository.findOne(team.id).members ? teamRepository.findOne(team.id).members.contains(user.id) : false
+            )
+
     }
 
     /**

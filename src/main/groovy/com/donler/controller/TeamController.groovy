@@ -72,7 +72,8 @@ class  TeamController {
                 companyId: currentUser?.companyId,
                 desc: team?.desc,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                members: [currentUser.id]
 
         ))
         currentUser.myGroup.add(savedTeam.id)
@@ -141,7 +142,8 @@ class  TeamController {
                 desc: team?.desc,
                 image: team?.image,
                 createdAt: team?.createdAt,
-                updatedAt: team?.updatedAt
+                updatedAt: team?.updatedAt,
+                members: team?.members
         )
     }
 
