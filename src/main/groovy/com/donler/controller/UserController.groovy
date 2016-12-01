@@ -4,6 +4,7 @@ import com.donler.config.AppConfig
 import com.donler.exception.BadRequestException
 import com.donler.exception.DatabaseDuplicateException
 import com.donler.exception.NotFoundException
+import com.donler.model.Constants
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleTeamModel
 import com.donler.model.SimpleUserModel
@@ -14,13 +15,18 @@ import com.donler.model.request.user.UserAddMemoRequestModel
 import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserProfileModifyRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
+import com.donler.model.response.ColleagueTrendItem
 import com.donler.model.response.ResponseMsg
+import com.donler.model.response.Showtime
 import com.donler.model.response.Team
 import com.donler.model.response.User as ResUser
+import com.donler.model.response.Vote
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
 import com.donler.repository.trend.ActivityRepository
+import com.donler.repository.trend.ShowtimeRepository
 import com.donler.repository.trend.TopicRepository
+import com.donler.repository.trend.TrendItemRepository
 import com.donler.repository.trend.VoteRepository
 import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.TokenRepository
@@ -96,6 +102,12 @@ class UserController {
 
     @Autowired
     TeamRepository teamRepository
+
+    @Autowired
+    TrendItemRepository trendItemRepository
+
+    @Autowired
+    ShowtimeRepository showtimeRepository
 
 
 
@@ -245,6 +257,48 @@ class UserController {
 
     }
 
+    /**
+     * 获取三张用户的动态图片
+     * @param userId
+     * @return
+     */
+    @ApiOperation(value = "用户的动态图片", notes = "获取三张用户的动态图片", response = ColleagueTrendItem.class)
+    @RequestMapping(path = "/image/{userId}", method = RequestMethod.GET)
+    def getMyColleagueTrendImage(@PathVariable("userId") String userId) {
+        def currentUser = !!userId ? userRepository.findOne(userId) :null
+        def list
+        def newList = []
+
+        if (currentUser) {
+            list = trendItemRepository.findByAuthorId(userId, new PageRequest(0, 3,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        } else {
+            return ResponseMsg.error("请传入正确的用户Id",200)
+        }
+        list.each {
+            switch (it.typeEnum) {
+                case Constants.TypeEnum.Showtime:
+                    def newShowtime = showtimeRepository.findOne(it.trendId)
+                    newList.add(new ColleagueTrendItem(imgurl: newShowtime.images, createdAt: newShowtime.createdAt))
+                    break
+                case Constants.TypeEnum.Activity:
+                    def newActivity = activityRepository.findOne(it.trendId)
+                    newList.add(new ColleagueTrendItem(imgurl: newActivity.image, createdAt: newActivity.createdAt))
+                    break
+                case Constants.TypeEnum.Topic:
+                    def newTopic = topicRepository.findOne(it.trendId)
+                    newList.add(new ColleagueTrendItem(imgurl: newTopic.image, createdAt: newTopic.createdAt))
+                    break
+                case Constants.TypeEnum.Vote:
+                    def newVote = voteRepository.findOne(it.trendId)
+                    newList.add(new ColleagueTrendItem(imgurl: newVote.image, createdAt: newVote.createdAt))
+                    break
+            }
+        }
+
+
+        return newList
+    }
 
     /**
      * 获取个人资料
@@ -314,10 +368,21 @@ class UserController {
         return result
     }
 
-    @ApiOperation(value = "个人页面", notes = "获取当前登录用户的时间轴")
+    /**
+     * 获取个人的时间轴
+     * @param trendId
+     * @param page
+     * @param limit
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "个人页面", notes = "获取当前登录用户的时间轴,返回值有为四种动态类型")
     @RequestMapping(path = "/profile/timeline", method = RequestMethod.GET)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     def getPersonalTimeline(
+            @RequestParam(required = false)
+            @ApiParam("页数,默认第0页")
+                    String trendId,
             @RequestParam(required = false)
             @ApiParam("页数,默认第0页")
                     Integer page,
@@ -326,10 +391,59 @@ class UserController {
                     Integer limit,
                     HttpServletRequest req) {
         def user = req.getAttribute("user") as User
+        def list
+        def currentTrend = !!trendId ? trendItemRepository.findByTrendId(trendId) : null
+        def newList = []
+        if (!currentTrend) {
+            //为空则返回最新的动态
+            list = trendItemRepository.findByAuthorId(user.id, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        } else {
+            list = trendItemRepository.findByAuthorIdAndCreatedAt(user.id, currentTrend.createdAt, new PageRequest(
+                    page ?: 0,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        }
 
+        list.each {
+            switch (it.typeEnum) {
+                case Constants.TypeEnum.Showtime:
+                    def newShowtime = showtimeRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseShowtimeByPersistentShowtime(newShowtime,user))
+                    break
+                case Constants.TypeEnum.Activity:
+                    def newActivity = activityRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseActivityByPersistentActivity(newActivity,user))
+                    break
+                case Constants.TypeEnum.Topic:
+                    def newTopic = topicRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseTopicByPersistentTopic(newTopic))
+                    break
+                case Constants.TypeEnum.Vote:
+                    def newVote = voteRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseVoteByPersistentVote(newVote,user))
+                    break
+            }
+        }
+        def dic = [:]
+        dic["content"] = newList
+        dic["last"] = list.last
+        dic["first"] = list.first
+        dic["totalElement"] = list.totalElements
+        dic["totalPages"] = list.totalPages
+        dic["size"] = list.size
+        dic["number"] = list.number
+        dic["numberOfElements"] = list.numberOfElements
+        def sort
+        sort = list.sort
+        dic["sort"] = sort
+        return dic
 
 
     }
+
 
     /**
      * 选择加入群组
@@ -559,7 +673,6 @@ class UserController {
         )
         return result
     }
-
 
 
 }
