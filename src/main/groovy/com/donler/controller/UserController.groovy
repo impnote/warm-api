@@ -377,9 +377,11 @@ class UserController {
      * @return
      */
     @ApiOperation(value = "个人页面", notes = "获取当前登录用户的时间轴,返回值有为四种动态类型")
-    @RequestMapping(path = "/profile/timeline", method = RequestMethod.GET)
-    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @RequestMapping(path = "/personal/timeline", method = RequestMethod.GET)
     def getPersonalTimeline(
+            @RequestParam(required = false)
+            @ApiParam("页数,默认第0页")
+                    String userId,
             @RequestParam(required = false)
             @ApiParam("页数,默认第0页")
                     String trendId,
@@ -388,58 +390,61 @@ class UserController {
                     Integer page,
             @RequestParam(required = false)
             @ApiParam("每页条数,默认10条")
-                    Integer limit,
-                    HttpServletRequest req) {
-        def user = req.getAttribute("user") as User
-        def list
-        def currentTrend = !!trendId ? trendItemRepository.findByTrendId(trendId) : null
-        def newList = []
-        if (!currentTrend) {
-            //为空则返回最新的动态
-            list = trendItemRepository.findByAuthorId(user.id, new PageRequest(
-                    page ?: 0,
-                    limit ?: 10,
-                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
-        } else {
-            list = trendItemRepository.findByAuthorIdAndCreatedAt(user.id, currentTrend.createdAt, new PageRequest(
-                    page ?: 0,
-                    limit ?: 10,
-                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
-        }
-
-        list.each {
-            switch (it.typeEnum) {
-                case Constants.TypeEnum.Showtime:
-                    def newShowtime = showtimeRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseShowtimeByPersistentShowtime(newShowtime,user))
-                    break
-                case Constants.TypeEnum.Activity:
-                    def newActivity = activityRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseActivityByPersistentActivity(newActivity,user))
-                    break
-                case Constants.TypeEnum.Topic:
-                    def newTopic = topicRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseTopicByPersistentTopic(newTopic))
-                    break
-                case Constants.TypeEnum.Vote:
-                    def newVote = voteRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseVoteByPersistentVote(newVote,user))
-                    break
+                    Integer limit) {
+        def user =!!userId ? userRepository.findOne(userId) : null
+        if (user) {
+            def list
+            def currentTrend = !!trendId ? trendItemRepository.findByTrendId(trendId) : null
+            def newList = []
+            if (!currentTrend) {
+                //为空则返回最新的动态
+                list = trendItemRepository.findByAuthorId(user.id, new PageRequest(
+                        page ?: 0,
+                        limit ?: 10,
+                        new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+            } else {
+                list = trendItemRepository.findByAuthorIdAndCreatedAt(user.id, currentTrend.createdAt, new PageRequest(
+                        page ?: 0,
+                        limit ?: 10,
+                        new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
             }
+
+            list.each {
+                switch (it.typeEnum) {
+                    case Constants.TypeEnum.Showtime:
+                        def newShowtime = showtimeRepository.findOne(it.trendId)
+                        newList.add(trendController.generateResponseShowtimeByPersistentShowtime(newShowtime, user))
+                        break
+                    case Constants.TypeEnum.Activity:
+                        def newActivity = activityRepository.findOne(it.trendId)
+                        newList.add(trendController.generateResponseActivityByPersistentActivity(newActivity, user))
+                        break
+                    case Constants.TypeEnum.Topic:
+                        def newTopic = topicRepository.findOne(it.trendId)
+                        newList.add(trendController.generateResponseTopicByPersistentTopic(newTopic))
+                        break
+                    case Constants.TypeEnum.Vote:
+                        def newVote = voteRepository.findOne(it.trendId)
+                        newList.add(trendController.generateResponseVoteByPersistentVote(newVote, user))
+                        break
+                }
+            }
+            def dic = [:]
+            dic["content"] = newList
+            dic["last"] = list.last
+            dic["first"] = list.first
+            dic["totalElement"] = list.totalElements
+            dic["totalPages"] = list.totalPages
+            dic["size"] = list.size
+            dic["number"] = list.number
+            dic["numberOfElements"] = list.numberOfElements
+            def sort
+            sort = list.sort
+            dic["sort"] = sort
+            return dic
+        } else {
+            return ResponseMsg.error("请传入正确的userId",200)
         }
-        def dic = [:]
-        dic["content"] = newList
-        dic["last"] = list.last
-        dic["first"] = list.first
-        dic["totalElement"] = list.totalElements
-        dic["totalPages"] = list.totalPages
-        dic["size"] = list.size
-        dic["number"] = list.number
-        dic["numberOfElements"] = list.numberOfElements
-        def sort
-        sort = list.sort
-        dic["sort"] = sort
-        return dic
 
 
     }
