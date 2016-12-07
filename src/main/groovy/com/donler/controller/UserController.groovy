@@ -430,9 +430,9 @@ class UserController {
                 }
             }
             def dic = [:]
-            dic["votesNumber"] = user?.votes?.size()
-            dic["topicsNumber"] = user?.topics?.size()
-            dic["activitiesNumber"] = user?.activities?.size()
+            dic["votesNumber"] = user?.votes?.size()?:0
+            dic["topicsNumber"] = user?.topics?.size()?:0
+            dic["activitiesNumber"] = user?.activities?.size()?:0
             dic["content"] = newList
             dic["last"] = list.last
             dic["first"] = list.first
