@@ -1,15 +1,24 @@
 package com.donler.controller
 
 import com.donler.exception.AttrNotValidException
+import com.donler.model.Constants
 import com.donler.model.SimpleCompanyModel
 import com.donler.model.SimpleTeamModel
 import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.user.User
 import com.donler.model.request.team.TeamCreateRequestBody
+import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Team as ResTeam
+import com.donler.model.response.TeamHomePageModel
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
+import com.donler.repository.trend.ActivityRepository
+import com.donler.repository.trend.ShowtimeRepository
+import com.donler.repository.trend.TopicRepository
+import com.donler.repository.trend.TrendItemRepository
+import com.donler.repository.trend.VoteRepository
+import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
@@ -21,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -32,7 +42,7 @@ import javax.servlet.http.HttpServletRequest
 @RestController
 @RequestMapping("/team")
 @Api(value = "team", tags = ["群组"])
-class  TeamController {
+class TeamController {
 
     @Autowired
     TeamRepository teamRepository
@@ -45,6 +55,27 @@ class  TeamController {
 
     @Autowired
     OSSService ossService
+
+    @Autowired
+    ColleagueItemRepository colleagueItemRepository
+
+    @Autowired
+    TrendItemRepository trendItemRepository
+
+    @Autowired
+    ActivityRepository activityRepository
+
+    @Autowired
+    TopicRepository topicRepository
+
+    @Autowired
+    VoteRepository voteRepository
+
+    @Autowired
+    ShowtimeRepository showtimeRepository
+
+    @Autowired
+    TrendController trendController
 
 
     @ApiOperation(value = "创建群组", notes = "根据传入的信息创建一个群组,body example: {\"name\": \"篮球小队\", \"desc\": \"我们是一个积极向上的团体\"}")
@@ -109,9 +140,90 @@ class  TeamController {
         return list.map(new Converter<Team, SimpleTeamModel>() {
             @Override
             SimpleTeamModel convert(Team source) {
-                return generateResponseSimpleTeamModelByPersistentTeam(source,currentUser)
+                return generateResponseSimpleTeamModelByPersistentTeam(source, currentUser)
             }
         })
+    }
+
+
+    @ApiOperation(value = "获取群组主页", notes = "根据群组Id获取群组首页内容")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @RequestMapping(path = "/team/detail", method = RequestMethod.GET)
+    def getTeamDetail(
+            @ApiParam(value = "")
+            @RequestParam(required = true)
+                    String teamId,
+            @ApiParam(value = "")
+            @RequestParam(required = false)
+                    String trendId,
+            @ApiParam(value = "")
+            @RequestParam(required = false)
+                    Integer page,
+            @ApiParam(value = "每一页的个数,默认为10")
+            @RequestParam(required = false)
+                    Integer limit,
+            HttpServletRequest req
+    ) {
+        def user = req.getAttribute("user") as User
+        def team = teamId ? teamRepository.findOne(teamId) : null
+        def perTrend = trendId ? trendItemRepository.findOne(trendId) : null
+        if (!team) {
+            return ResponseMsg.error("请传入正确的群组id", 200)
+        }
+        def result = generateResponseByPersistentTeam(team, user)
+        def list
+        def newList = []
+        if (!perTrend) {
+            list = trendItemRepository.findByTeamId(teamId,new PageRequest(
+                    page ?: 0 ,
+                    limit ?: 10,
+                    new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        } else {
+          list =   trendItemRepository.findByTeamIdAndCreatedAt(teamId,perTrend.createdAt,new PageRequest(
+                  page ?: 0,
+                  limit ?: 10,
+                  new Sort(Arrays.asList(new  Sort.Order(Sort.Direction.DESC, "createdAt")))))
+        }
+
+        list.each {
+            switch (it.typeEnum) {
+                case Constants.TypeEnum.Showtime:
+                    def newShowtime = showtimeRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseShowtimeByPersistentShowtime(newShowtime, user))
+                    break
+                case Constants.TypeEnum.Activity:
+                    def newActivity = activityRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseActivityByPersistentActivity(newActivity, user))
+                    break
+                case Constants.TypeEnum.Topic:
+                    def newTopic = topicRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseTopicByPersistentTopic(newTopic))
+                    break
+                case Constants.TypeEnum.Vote:
+                    def newVote = voteRepository.findOne(it.trendId)
+                    newList.add(trendController.generateResponseVoteByPersistentVote(newVote, user))
+                    break
+            }
+        }
+        def dic = [:]
+        dic["votesNumber"] = user?.votes?.size()?:0
+        dic["topicsNumber"] = user?.topics?.size()?:0
+        dic["activitiesNumber"] = user?.activities?.size()?:0
+        dic["content"] = newList
+        dic["last"] = list.last
+        dic["first"] = list.first
+        dic["totalElement"] = list.totalElements
+        dic["totalPages"] = list.totalPages
+        dic["size"] = list.size
+        dic["number"] = list.number
+        dic["numberOfElements"] = list.numberOfElements
+        def sort
+        sort = list.sort
+        dic["sort"] = sort
+        result.teamTrend = dic
+        return result
+
+
     }
 
 //    @ApiOperation(value = "获取群组列表(分页)", notes = "获取包含某关键字的群组列表或者该用户所在公司的全部群组列表")
@@ -132,7 +244,7 @@ class  TeamController {
                         id: author?.id,
                         nickname: author?.nickname,
                         avatar: author?.avatar
-                ): null,
+                ) : null,
                 company: !!company ? new SimpleCompanyModel(
                         id: company?.id,
                         name: company?.name,
@@ -143,20 +255,71 @@ class  TeamController {
                 image: team?.image,
                 createdAt: team?.createdAt,
                 updatedAt: team?.updatedAt,
-                members: team?.members
+
         )
     }
 
+    TeamHomePageModel generateResponseByPersistentTeam(Team team, User user) {
+        def author = userRepository.findOne(team?.authorId)
+        def company = companyRepository.findOne(team?.companyId)
+        return new TeamHomePageModel(
+                id: team?.id,
+                name: team?.name,
+                author: !!author ? new SimpleUserModel(
+                        id: author?.id,
+                        nickname: author?.nickname,
+                        avatar: author?.avatar,
+                        remark: !!user?.addressBook ? {
+                            for (int i = 0; i < user.addressBook.size(); i++) {
+                                def item = colleagueItemRepository.findOne(user.addressBook[i])
+                                if (item.colleagueId == it) {
+                                    return item.memo
+                                }
+                            }} : null
+                ) : null,
+                company: !!company ? new SimpleCompanyModel(
+                        id: company?.id,
+                        name: company?.name,
+                        imageUrl: company?.image
+                ) : null,
+                peopleCount: team?.members?.size(),
+                desc: team?.desc,
+                image: team?.image,
+                createdAt: team?.createdAt,
+                updatedAt: team?.updatedAt,
+                members: !!team?.members ? team?.members?.collect {
+                    def currentUser = userRepository.findOne(it)
+                    return new SimpleUserModel(
+                            id: currentUser.id,
+                            nickname: currentUser.nickname,
+                            avatar: currentUser.avatar,
+                            realname: currentUser.realname,
+                            phone: currentUser.phone,
+                            job: currentUser.job,
+                            remark: !!user?.addressBook ? {
+                                for (int i = 0; i < user.addressBook.size(); i++) {
+                                    def item = colleagueItemRepository.findOne(user.addressBook[i])
+                                    if (item.colleagueId == it) {
+                                        return item.memo
+                                    }
+                                }
+                            } : null
+                    )
+                } : null,
+                teamTrend: [:]
+
+        )
+    }
+
+
     static def generateResponseSimpleTeamModelByPersistentTeam(Team team, User user) {
 
-            return new SimpleTeamModel(
+        return new SimpleTeamModel(
                 id: team?.id,
                 name: team?.name,
                 imageUrl: team?.image,
                 isJoined: !!team.members ? team.members.contains(user.id) : false)
-            }
-
-
+    }
 
 
 }

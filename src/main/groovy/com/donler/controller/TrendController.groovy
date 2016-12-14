@@ -125,7 +125,8 @@ class TrendController {
                 companyId: currentUser.companyId,
                 createdAt: showtime.createdAt,
                 updatedAt: showtime.updatedAt,
-                authorId: showtime.authorId
+                authorId: showtime.authorId,
+                teamId: showtime.teamId
         ))
         return generateResponseShowtimeByPersistentShowtime(showtime)
 
@@ -598,7 +599,8 @@ class TrendController {
                 companyId: currentUser.companyId,
                 createdAt: activity.createdAt,
                 updatedAt: activity.updatedAt,
-                authorId: activity.authorId
+                authorId: activity.authorId,
+                teamId: activity.teamId
         ))
         def activityList = []
         !!currentUser?.activities ? activityList = currentUser?.activities : null
@@ -757,7 +759,8 @@ class TrendController {
                 companyId: currentUser.companyId,
                 createdAt: savedVote.createdAt,
                 updatedAt: savedVote.updatedAt,
-                authorId: savedVote.authorId
+                authorId: savedVote.authorId,
+                teamId: savedVote.teamId
         ))
         def votesList = []
         !!currentUser.votes ? votesList = currentUser?.votes : null
@@ -967,7 +970,8 @@ class TrendController {
                 companyId: currentUser.companyId,
                 createdAt: saveTopic.createdAt,
                 updatedAt: saveTopic.updatedAt,
-                authorId: saveTopic.authorId
+                authorId: saveTopic.authorId,
+                teamId: saveTopic.teamId
         ))
         def topicsList = []
         !!currentUser?.topics ? topicsList = currentUser?.topics : null

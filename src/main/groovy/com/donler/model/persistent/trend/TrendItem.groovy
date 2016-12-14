@@ -18,6 +18,8 @@ class TrendItem {
     String trendId //动态id
     @ApiModelProperty("公司id")
     String companyId //公司id
+    @ApiModelProperty("公司id")
+    String teamId //公司id
     @ApiModelProperty("创建时间")
     Date createdAt // 创建时间
     @ApiModelProperty("更新时间")
