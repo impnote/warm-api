@@ -11,5 +11,6 @@ import org.springframework.data.mongodb.repository.MongoRepository
 interface ActivityRepository extends MongoRepository<Activity, String> {
     List<Activity> findByCompanyId(def id)
     Page<Activity> findByCompanyId(def companyId, Pageable pageable)
-    Page<Activity> findByCreatedAtBefore(Date createdAt,Pageable pageable)
+    Page<Activity> findByCreatedAtBefore(Date createdAt, Pageable pageable)
+    Page<Activity> findByCompanyIdAndCreatedAtBefore(def companyId, Date createdAt,Pageable pageable)
 }

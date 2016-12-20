@@ -12,8 +12,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 interface VoteRepository extends MongoRepository<Vote, String> {
     List<Vote> findByCompanyId(def id)
     Page<Vote> findByCompanyId(String companyId, Pageable pageable)
-
     Page<Vote> findByTeamId(String teamId, Pageable pageable)
-
     Page<Vote> findByUpdatedAtBefore(Date updatedAt, Pageable pageable)
+    Page<Vote> findByCompanyIdAndCreatedAtBefore(def companyId, Date createdAt, Pageable pageable)
 }

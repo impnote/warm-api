@@ -227,7 +227,7 @@ class TrendController {
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
         } else {
             // 不为空返回指定瞬间的前n条记录
-            list = showtimeRepository.findByUpdatedAtBefore(
+            list = showtimeRepository.findByCompanyIdAndCreatedAtBefore(user?.companyId,
                     perShowtime?.updatedAt,
                     new PageRequest(
                             page ?: 0,
@@ -634,7 +634,7 @@ class TrendController {
     * @return
      */
     @ResponseBody
-    @RequestMapping(value = "//activity/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/activity/list", method = RequestMethod.GET)
     @ApiOperation(value = "分页加载活动", notes = "如果传入置顶的activityId则加载该Id之前的活动,否则获取最新的activity")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     Page<ResActivity> getActivityByLastActivityId(
@@ -660,7 +660,7 @@ class TrendController {
                     )))
         } else {
             //不为空返回指定瞬间的前n条记录
-            list =activityRepository.findByCreatedAtBefore(perActivity?.createdAt,
+            list =activityRepository.findByCompanyIdAndCreatedAtBefore(user?.companyId,perActivity?.createdAt,
                     new PageRequest(
                             page ?: 0,
                             limit ?: 10,
@@ -837,12 +837,12 @@ class TrendController {
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updatedAt")))))
         } else {
             //不为空返回指定瞬间的前n条记录
-            list = voteRepository.findByUpdatedAtBefore(
+            list = voteRepository.findByCompanyIdAndCreatedAtBefore(user?.companyId,
                     perVote?.updatedAt,
                     new PageRequest(
                             page ?: 0,
                             limit ?: 10,
-                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "updateAt")))))
+                            new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
         }
         return list.map(new Converter() {
             @Override
@@ -1089,7 +1089,7 @@ class TrendController {
                     limit ?: 10,
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
         } else {
-            list = topicRepository.findByCreatedAtBefore(perTopic.createdAt, new PageRequest(
+            list = topicRepository.findByCompanyIdAndCreatedAtBefore(user?.companyId,perTopic.createdAt, new PageRequest(
                     page ?: 0,
                     limit ?: 10,
                     new Sort(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "createdAt")))))
@@ -1138,7 +1138,7 @@ class TrendController {
 
         } else{
         //如果不为空则返回指定动态的前n条记录
-             list = trendItemRepository.findByCreatedAtBefore(
+             list = trendItemRepository.findByCompanyIdAndCreatedAtBefore(user?.companyId,
              perTrend?.createdAt,
             new PageRequest(
                 page ?: 0,

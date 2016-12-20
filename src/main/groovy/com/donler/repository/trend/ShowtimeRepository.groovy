@@ -15,4 +15,5 @@ interface ShowtimeRepository extends MongoRepository<Showtime, String> {
     List<Showtime> findByCompanyId(def id)
     Page<Showtime> findByCompanyId(def id, Pageable pageable)
     Page<Showtime> findByUpdatedAtBefore(Date updatedAt, Pageable pageable)
+    Page<Showtime> findByCompanyIdAndCreatedAtBefore(def companyId, Date createdAt, Pageable pageable)
 }

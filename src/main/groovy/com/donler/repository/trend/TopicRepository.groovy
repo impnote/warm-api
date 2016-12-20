@@ -12,6 +12,7 @@ interface TopicRepository extends MongoRepository<Topic, String> {
     List<Topic> findByAuthorId(def authorId)
     Page<Topic> findByCompanyId(def companyId, Pageable pageable)
     Page<Topic> findByCreatedAtBefore(Date createdAt, Pageable pageable)
+    Page<Topic> findByCompanyIdAndCreatedAtBefore(def companyId, Date createdAt, Pageable pageable)
 
 
 

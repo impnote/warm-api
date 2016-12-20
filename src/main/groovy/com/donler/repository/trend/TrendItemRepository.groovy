@@ -14,6 +14,7 @@ interface TrendItemRepository extends MongoRepository<TrendItem, String> {
     Page<TrendItem> findByTeamId(def teamId, Pageable pageable)
     Page<TrendItem> findByTeamIdAndCreatedAt(def teamId,Date createdAt, Pageable pageable)
     Page<TrendItem> findByCreatedAtBefore(Date createdAt,Pageable pageable)
+    Page<TrendItem> findByCompanyIdAndCreatedAtBefore(def companyId, Date createdAt,Pageable pageable)
     Page<TrendItem> findByAuthorId(def uid, Pageable pageable)
     Page<TrendItem> findByAuthorIdAndCreatedAt(def uid, Date createdAt, Pageable pageable)
 }
