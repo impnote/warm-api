@@ -8,6 +8,7 @@ import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.user.User
 import com.donler.model.request.team.TeamCreateRequestBody
+import com.donler.model.request.team.TeamDescUpdateRequestBody
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Team as ResTeam
 import com.donler.model.response.TeamHomePageModel
@@ -26,6 +27,7 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import net.sf.json.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
 
 /**
  * Created by jason on 5/27/16.
@@ -76,6 +79,8 @@ class TeamController {
 
     @Autowired
     TrendController trendController
+
+
 
 
     @ApiOperation(value = "创建群组", notes = "根据传入的信息创建一个群组,body example: {\"name\": \"篮球小队\", \"desc\": \"我们是一个积极向上的团体\"}")
@@ -144,6 +149,50 @@ class TeamController {
             }
         })
     }
+
+    /**
+     * 修改群组封面
+     * @param teamId
+     * @param file
+     * @param req
+     * @return
+     */
+    @RequestMapping(path = "/update/picture/{teamId}", method = RequestMethod.POST)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @ApiOperation(value = "修改群组封面", notes = "修改群组的封面")
+    def updateTeamPicture(@PathVariable String teamId, @RequestPart MultipartFile file,HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def team = teamRepository.findOne(teamId)
+        if (!team) {
+            return ResponseMsg.error("请传入正确的群组Id",200)
+        }
+        if (team.authorId != user.id) {
+            return ResponseMsg.error("你不是群主,没有权限进行该操作",200)
+        }
+        team.image = ossService.uploadFileToOSS(file)
+        teamRepository.save(team)
+        return ResponseMsg.ok(team.image)
+    }
+
+    @ResponseBody
+    @RequestMapping(path = "/update/desc", method = RequestMethod.POST)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @ApiOperation(value = "修改群组公告", notes = "修改群组的公告")
+    def updateTeamDesc(@RequestBody TeamDescUpdateRequestBody body, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        def team = teamRepository.findOne(body?.teamId)
+        if (!team) {
+            return ResponseMsg.error("请传入正确的群组Id",200)
+        }
+        if (team.authorId != user.id) {
+            return ResponseMsg.error("你不是群主,没有权限进行该操作",200)
+        }
+        team.desc = body?.desc
+        teamRepository.save(team)
+        return ResponseMsg.ok(team.desc)
+    }
+
+
 
 
     @ApiOperation(value = "获取群组主页", notes = "根据群组Id获取群组首页内容")
