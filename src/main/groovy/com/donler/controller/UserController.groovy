@@ -109,6 +109,9 @@ class UserController {
     @Autowired
     ShowtimeRepository showtimeRepository
 
+    @Autowired
+    EasemobController easemobController
+
 
 
 
@@ -148,7 +151,7 @@ class UserController {
         } else if (userRepository.findByPhone(newBody?.phone)) {
             throw new DatabaseDuplicateException("手机号码为${newBody?.phone}的用户已经存在")
         } else {
-            return userRepository.save(new User(
+            def savedUser =  userRepository.save(new User(
                     nickname: newBody.nickname ?: "匿名",
                     gender: newBody?.gender,
                     avatar: currentAvatar,
@@ -158,6 +161,9 @@ class UserController {
                     email: newBody?.email,
                     companyId: !!company ? company?.id : null
             ))
+            //注册环信用户
+            easemobController.createUser(savedUser.id,savedUser.password,savedUser.username)
+            return
         }
     }
 

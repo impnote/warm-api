@@ -41,6 +41,7 @@ class AuthUserFilter implements Filter {
         def needAuths = [
                 ~/\/trend.*/, // 动态中的所有路由
                 ~/\/team.*/, // 群组中的所有路由
+                ~/\/easemob.*/, // 环信中的所有路由
                 ~/\/user\/profile.*/,// 获取个人资料
         ]
 
@@ -48,6 +49,7 @@ class AuthUserFilter implements Filter {
          * get方法中需要验证的url,比如某些search
          */
         def needAuthsOfGetMethod = [
+                ~/\/easemob.*/, // 环信中的所有路由
                 ~/\/team(.*)search/, // 群组中的所有的搜索的get请求
                 ~/\/trend(.*)search/, // 动态的中的所有搜索的get请求
                 ~/\/user\/profile/, // 获取个人资料的get请求

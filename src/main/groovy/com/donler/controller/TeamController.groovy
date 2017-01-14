@@ -23,6 +23,7 @@ import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
+import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
@@ -38,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
+import javax.validation.constraints.NotNull
 
 /**
  * Created by jason on 5/27/16.
@@ -80,6 +82,9 @@ class TeamController {
     @Autowired
     TrendController trendController
 
+    @Autowired
+    EasemobController easemobController
+
 
 
 
@@ -115,6 +120,7 @@ class TeamController {
         currentUser.myGroup.add(savedTeam.id)
         currentUser.myGroup.unique()
         userRepository.save(currentUser)
+        easemobController.createChatgroups(savedTeam,currentUser)
         return generateResponseByPersistentTeam(savedTeam)
     }
 
@@ -160,7 +166,7 @@ class TeamController {
     @RequestMapping(path = "/update/picture/{teamId}", method = RequestMethod.POST)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @ApiOperation(value = "修改群组封面", notes = "修改群组的封面")
-    def updateTeamPicture(@PathVariable String teamId, @RequestPart MultipartFile file,HttpServletRequest req) {
+    def updateTeamPicture(@PathVariable String teamId, @RequestPart MultipartFile[] files,HttpServletRequest req) {
         def user = req.getAttribute("user") as User
         def team = teamRepository.findOne(teamId)
         if (!team) {
@@ -169,11 +175,17 @@ class TeamController {
         if (team.authorId != user.id) {
             return ResponseMsg.error("你不是群主,没有权限进行该操作",200)
         }
-        team.image = ossService.uploadFileToOSS(file)
+        team.image = ossService.uploadFileToOSS(files?.first())
         teamRepository.save(team)
         return ResponseMsg.ok(team.image)
     }
 
+    /**
+     * 修改群组公告
+     * @param body
+     * @param req
+     * @return
+     */
     @ResponseBody
     @RequestMapping(path = "/update/desc", method = RequestMethod.POST)
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
@@ -192,9 +204,61 @@ class TeamController {
         return ResponseMsg.ok(team.desc)
     }
 
+    /**
+     * 邀请成员
+     * @param userId
+     * @param teamId
+     * @param req
+     * @return
+     */
+    @RequestMapping(path = "invite/member", method = RequestMethod.POST,consumes = "application/json")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @ApiOperation(value = "邀请成员", notes = "邀请成员")
+    def inviteMember(@RequestParam(required = true) List<String> membersId,@RequestParam(required = true) String teamId, HttpServletRequest req) {
+        def currentUser = req.getAttribute("user") as User
+        try {
+            membersId.each {
 
+                def newMember = userRepository.findOne(it)
+                def currentTeam = teamRepository.findOne(teamId)
 
+                if (!newMember) {
+                    return ResponseMsg.error("请传入正确的用户ID", 200)
+                }
+                if (!currentTeam) {
+                    return ResponseMsg.error("请传入正确的群组ID", 200)
+                }
+                if (!currentTeam.companyId.equals(currentUser.companyId)) {
+                    return ResponseMsg.error("该成员不属于此公司,请检查", 200)
+                }
+                if (currentTeam.members.contains(it)) {
+                    return ResponseMsg.error("该成员已经存在,请检查", 200)
+                }
+                if (!currentTeam.members.contains(currentUser.id)) {
+                    return ResponseMsg.error("该成员不在该群内,没有邀请权限", 200)
+                }
+                currentTeam.members.add(it)
+                currentTeam.members.unique()
+                currentUser.myGroup.add(teamId)
+                currentUser.myGroup.unique()
+                userRepository.save(currentUser)
+                teamRepository.save(currentTeam)
+                return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+            }
+        } catch (Exception ex) {
+            println(ex)
+        }
+    }
 
+    /**
+     * 获取群组主页
+     * @param teamId
+     * @param trendId
+     * @param page
+     * @param limit
+     * @param req
+     * @return
+     */
     @ApiOperation(value = "获取群组主页", notes = "根据群组Id获取群组首页内容")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/team/detail", method = RequestMethod.GET)
@@ -308,6 +372,12 @@ class TeamController {
         )
     }
 
+    /**
+     * 根据持久化的生成相应的详细群组model
+     * @param team
+     * @param user
+     * @return
+     */
     TeamHomePageModel generateResponseByPersistentTeam(Team team, User user) {
         def author = userRepository.findOne(team?.authorId)
         def company = companyRepository.findOne(team?.companyId)
@@ -338,28 +408,36 @@ class TeamController {
                 updatedAt: team?.updatedAt,
                 members: !!team?.members ? team?.members?.collect {
                     def currentUser = userRepository.findOne(it)
-                    return new SimpleUserModel(
-                            id: currentUser.id,
-                            nickname: currentUser.nickname,
-                            avatar: currentUser.avatar,
-                            realname: currentUser.realname,
-                            phone: currentUser.phone,
-                            job: currentUser.job,
-                            remark: !!user?.addressBook ? {
-                                for (int i = 0; i < user.addressBook.size(); i++) {
-                                    def item = colleagueItemRepository.findOne(user.addressBook[i])
-                                    if (item.colleagueId == it) {
-                                        return item.memo
-                                    }
-                                }
-                            } : null
-                    )
+                    if (!currentUser) {
+                        return
+                    }
+                        return new SimpleUserModel(
+                                id: currentUser?.id,
+                                nickname: currentUser?.nickname,
+                                avatar: currentUser?.avatar,
+                                realname: currentUser?.realname,
+                                phone: currentUser?.phone,
+                                job: currentUser?.job,
+                                remark: !!user.addressBook ? getRemark(user,it) : null
+                        )
+
+
                 } : null,
                 teamTrend: [:]
 
         )
     }
 
+    def getRemark(User user,String colleagueId) {
+        for (int i = 0; i < user.addressBook.size(); i++) {
+            def item = colleagueItemRepository.findOne(user.addressBook[i])
+            println(item.memo)
+            if (item.colleagueId.equals(colleagueId)) {
+                return item.memo
+            }
+        }
+
+    }
 
     static def generateResponseSimpleTeamModelByPersistentTeam(Team team, User user) {
 

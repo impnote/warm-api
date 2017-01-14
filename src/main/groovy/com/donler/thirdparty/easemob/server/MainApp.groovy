@@ -3,6 +3,9 @@ package com.donler.thirdparty.easemob.server
 import com.donler.thirdparty.easemob.server.api.*
 import com.donler.thirdparty.easemob.server.comm.ClientContext
 import com.donler.thirdparty.easemob.server.comm.EasemobRestAPIFactory
+import com.donler.thirdparty.easemob.server.comm.body.ModifyNicknameBody
+import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper
+import com.fasterxml.jackson.databind.node.ContainerNode
 
 /**
  * Created by zhangjiasheng on 7/19/16.
@@ -26,10 +29,10 @@ class MainApp {
 //        print("===================create>>>>>>>>>>>>>>>>>>>>>>")
 //        println(res)
 
-        def res1 = user.getIMUsersByUserName("jason123")
-        println("=======get>>>>>${res1}")
+//        def res1 = user.getIMUsersByUserName("jerry")
+//        println("=======get>>>>>${res1}")
 
-
+        def res = user.modifyIMUserNickNameWithAdminToken("jerry",new ModifyNicknameBody("Riven"))
 
 
     }
