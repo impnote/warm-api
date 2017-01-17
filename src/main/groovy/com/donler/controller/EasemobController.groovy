@@ -69,7 +69,7 @@ class EasemobController {
     def createUser(String name, String password, String nickname) {
         ResponseWrapper responseWrapper = user.createNewIMUserSingle(new IMUserBody(name, password, nickname)) as ResponseWrapper
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
-        String uuid = objectNode.get("entities").get(0).get("uuid")
+        String uuid = objectNode.get("entities").get(0).get("uuid").toString().replace("\"","").trim()
         return uuid
     }
 
@@ -80,7 +80,7 @@ class EasemobController {
 //    def createUser(String name, String password, String nickname) {
         ResponseWrapper responseWrapper = user.createNewIMUserSingle(new IMUserBody(name, password, nickname)) as ResponseWrapper
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
-        String abc = objectNode.get("entities").get(0).get("uuid")
+        String abc = objectNode.get("entities").get(0).get("uuid").toString().replace("\"","").trim()
         println(abc)
     }
 
