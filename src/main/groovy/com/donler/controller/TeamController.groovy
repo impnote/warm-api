@@ -421,7 +421,7 @@ class TeamController {
                                 realname: currentUser?.realname,
                                 phone: currentUser?.phone,
                                 job: currentUser?.job,
-                                remark: !!user.addressBook ? getRemark(user,it) : null
+                                remark: !!user?.addressBook ? getRemark(user,it) : null
                         )
 
 
