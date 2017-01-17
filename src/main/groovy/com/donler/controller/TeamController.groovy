@@ -9,6 +9,7 @@ import com.donler.model.persistent.team.Team
 import com.donler.model.persistent.user.User
 import com.donler.model.request.team.TeamCreateRequestBody
 import com.donler.model.request.team.TeamDescUpdateRequestBody
+import com.donler.model.request.team.TeamInviteMembersRequestBody
 import com.donler.model.response.ResponseMsg
 import com.donler.model.response.Team as ResTeam
 import com.donler.model.response.TeamHomePageModel
@@ -216,40 +217,40 @@ class TeamController {
     @RequestMapping(path = "invite/member", method = RequestMethod.POST,consumes = "application/json")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @ApiOperation(value = "邀请成员", notes = "邀请成员")
-    def inviteMember(@RequestParam(required = true) List<String> membersId,@RequestParam(required = true) String teamId, HttpServletRequest req) {
+    def inviteMember(@Valid @RequestBody TeamInviteMembersRequestBody body, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
-        try {
-            membersId.each {
+//        try {
+//            body?.membersId?.each {
+                for (int i = 0; i < body.membersId.size(); i++) {
+                    def newMember = userRepository.findOne(body.membersId[i])
+                    def currentTeam = teamRepository.findOne(body?.teamId)
 
-                def newMember = userRepository.findOne(it)
-                def currentTeam = teamRepository.findOne(teamId)
-
-                if (!newMember) {
-                    return ResponseMsg.error("请传入正确的用户ID", 200)
-                }
-                if (!currentTeam) {
-                    return ResponseMsg.error("请传入正确的群组ID", 200)
-                }
-                if (!currentTeam.companyId.equals(currentUser.companyId)) {
-                    return ResponseMsg.error("该成员不属于此公司,请检查", 200)
-                }
-                if (currentTeam.members.contains(it)) {
-                    return ResponseMsg.error("该成员已经存在,请检查", 200)
-                }
-                if (!currentTeam.members.contains(currentUser.id)) {
-                    return ResponseMsg.error("该成员不在该群内,没有邀请权限", 200)
-                }
-                currentTeam.members.add(it)
-                currentTeam.members.unique()
-                currentUser.myGroup.add(teamId)
-                currentUser.myGroup.unique()
-                userRepository.save(currentUser)
-                teamRepository.save(currentTeam)
-                return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+                    if (!newMember) {
+                        return ResponseMsg.error("请传入正确的用户ID", 200)
+                    }
+                    if (!currentTeam) {
+                        return ResponseMsg.error("请传入正确的群组ID", 200)
+                    }
+                    if (!currentTeam.companyId.equals(currentUser.companyId)) {
+                        return ResponseMsg.error("该成员不属于此公司,请检查", 200)
+                    }
+                    if (currentTeam.members.contains(body.membersId[i])) {
+                        return ResponseMsg.error("该成员已经存在,请检查", 200)
+                    }
+                    if (!currentTeam.members.contains(currentUser.id)) {
+                        return ResponseMsg.error("该成员不在该群内,没有邀请权限", 200)
+                    }
+                    currentTeam.members.add(body.membersId[i])
+                    currentTeam.members.unique()
+                    currentUser.myGroup.add(body?.teamId)
+                    currentUser.myGroup.unique()
+                    userRepository.save(currentUser)
+                    teamRepository.save(currentTeam)
+                    return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
             }
-        } catch (Exception ex) {
-            println(ex)
-        }
+//        } catch (Exception ex) {
+//            println(ex)
+//        }
     }
 
     /**
