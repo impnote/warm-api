@@ -7,7 +7,7 @@ import java.security.MessageDigest
  */
 class MD5Util {
 
-    static final String salt = "com.donler.warm api by jason"
+    static final String salt = "com.donler.warm api"
 
     static String md5Encode(String inStr) {
         MessageDigest md5;
