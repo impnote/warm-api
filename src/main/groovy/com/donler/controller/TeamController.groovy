@@ -120,7 +120,9 @@ class TeamController {
         currentUser.myGroup.add(savedTeam.id)
         currentUser.myGroup.unique()
         userRepository.save(currentUser)
-        easemobController.createChatgroups(savedTeam,currentUser)
+        String easemobid = easemobController.createChatgroups(savedTeam,currentUser)
+        savedTeam.easemobId = easemobid
+        teamRepository.save(savedTeam)
         return generateResponseByPersistentTeam(savedTeam)
     }
 
@@ -368,6 +370,7 @@ class TeamController {
                 image: team?.image,
                 createdAt: team?.createdAt,
                 updatedAt: team?.updatedAt,
+                easemobId: team?.easemobId
 
         )
     }

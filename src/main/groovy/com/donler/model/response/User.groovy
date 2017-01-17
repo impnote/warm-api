@@ -45,4 +45,6 @@ class User {
     List<ColleagueItem> addressBook
     @ApiModelProperty("备注")
     String remark
+    @ApiModelProperty("环信用户id")
+    String easemobid //环信用户id
 }

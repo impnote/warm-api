@@ -49,4 +49,6 @@ class User {
     List<String> addressBook
     @ApiModelProperty("我的群组")
     List<String> myGroup = [] //我的群组
+    @ApiModelProperty("环信用户id")
+    String easemobId  //环信用户id
 }

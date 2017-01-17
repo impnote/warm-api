@@ -13,11 +13,15 @@ import com.donler.thirdparty.easemob.server.api.SendMessageAPI
 import com.donler.thirdparty.easemob.server.comm.ClientContext
 import com.donler.thirdparty.easemob.server.comm.EasemobRestAPIFactory
 import com.donler.thirdparty.easemob.server.comm.body.ChatGroupBody
-import com.donler.thirdparty.easemob.server.comm.body.ChatRoomBody
 import com.donler.thirdparty.easemob.server.comm.body.IMUserBody
+import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.gson.Gson
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
+import net.sf.json.JSON
+import org.json.simple.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -55,8 +59,29 @@ class EasemobController {
 //    @ApiOperation(value = "创建环信用户")
 //    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
 //    def createUser(@RequestParam String name,@RequestParam String password,@RequestParam String nickname) {
+    /**
+     * 创建环信用户并且返回环信用户id
+     * @param name
+     * @param password
+     * @param nickname
+     * @return
+     */
     def createUser(String name, String password, String nickname) {
-        user.createNewIMUserSingle(new IMUserBody(name, password, nickname))
+        ResponseWrapper responseWrapper = user.createNewIMUserSingle(new IMUserBody(name, password, nickname)) as ResponseWrapper
+        ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
+        String uuid = objectNode.get("entities").get(0).get("uuid")
+        return uuid
+    }
+
+    @RequestMapping(value = "/create/user", method = RequestMethod.POST)
+    @ApiOperation(value = "创建环信用户")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def createUsers(@RequestParam String name,@RequestParam String password,@RequestParam String nickname) {
+//    def createUser(String name, String password, String nickname) {
+        ResponseWrapper responseWrapper = user.createNewIMUserSingle(new IMUserBody(name, password, nickname)) as ResponseWrapper
+        ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
+        String abc = objectNode.get("entities").get(0).get("uuid")
+        println(abc)
     }
 
     @RequestMapping(value = "/chatgroups", method = RequestMethod.POST)
@@ -71,7 +96,7 @@ class EasemobController {
         }
         String [] members = new String[currentTeam.members.size()]
         currentTeam.members.toArray(members)
-        chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.desc,true,200,false,currentTeam.authorId,members))
+        def jsonStr = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.desc,true,200,false,currentTeam.authorId,members))
 
     }
 
@@ -79,18 +104,33 @@ class EasemobController {
 //    @ApiOperation(value = "创建环信用户")
 //    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
 //    def createChatgroups(@RequestParam(required = true) String teamId,HttpServletRequest req) {
+    /**
+     * 创建环信群组,返回环信群组Id
+     * @param currentTeam
+     * @param user
+     * @return
+     */
     def createChatgroups( Team currentTeam,User user) {
 //        def currentUser = req.getAttribute("user") as User
 //        def currentTeam = teamRepository.findOne(teamId)
 //        if (!currentTeam) {
 //            return ResponseMsg.error("请传入正确的群组Id",200)
 //        }
+        currentTeam.members.remove(currentTeam.authorId)
         String [] members = new String[currentTeam.members.size()]
         currentTeam.members.toArray(members)
-        chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.desc,true,200,false,currentTeam.authorId,members))
-
+        ResponseWrapper responseWrapper = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.desc,true,200,false,currentTeam.authorId,members)) as ResponseWrapper
+        ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
+        String groupid = objectNode.get("data").get("groupid").toString().replace("\"","").trim()
+        return groupid
     }
 
+    @RequestMapping(value = "/chatgroups/users", method = RequestMethod.POST)
+    @ApiOperation(value = "批量添加用户")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def addChatGroupsUsers(String groupId,String [] members) {
+        chatgroup.addBatchUsersToChatGroup(groupId,members as JSON)
+    }
 
 }
 

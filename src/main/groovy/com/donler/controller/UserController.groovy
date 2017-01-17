@@ -162,8 +162,9 @@ class UserController {
                     companyId: !!company ? company?.id : null
             ))
             //注册环信用户
-            easemobController.createUser(savedUser.id,savedUser.password,savedUser.username)
-            return
+            String uuid = easemobController.createUser(savedUser.id,savedUser.password,savedUser.username)
+            savedUser.easemobId = uuid
+            userRepository.save(savedUser)
         }
     }
 
@@ -618,6 +619,7 @@ class UserController {
                 topicsNum: !!user?.topics?.size() ?  user?.topics?.size() : 0,
                 votesNum: !!user?.votes?.size() ? user?.votes?.size() : 0,
                 activitiesNum: !!user?.activities?.size() ? user?.activities?.size() : 0,
+                easemobid: user?.easemobId
 
 
         )

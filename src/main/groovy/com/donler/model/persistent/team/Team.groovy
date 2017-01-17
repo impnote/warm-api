@@ -33,4 +33,7 @@ class Team {
     @ApiModelProperty("群组成员")
     List<String> members = []//群组成员
 
+    @ApiModelProperty("环信群组id")
+    String easemobId //环信群组id
+
 }

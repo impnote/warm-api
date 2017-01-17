@@ -30,4 +30,6 @@ class Team {
     Date updatedAt // 更新时间
     @ApiModelProperty("群组成员")
     List<SimpleUserModel> members
+    @ApiModelProperty("环信群组id")
+    String easemobId //环信群组id
 }

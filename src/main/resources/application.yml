@@ -1,5 +1,5 @@
 config:
-  oss:
+  oss:gt
     endpoint: "http://oss-cn-qingdao.aliyuncs.com"
     accessKeyId: "L33bxhzrpnRBLizQ"
     accessKeySecret: "6P1vpfW9nGU8FtcGBSYAubfuBLjlf6"
