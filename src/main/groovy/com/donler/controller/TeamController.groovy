@@ -24,12 +24,20 @@ import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.UserRepository
 import com.donler.service.OSSService
 import com.donler.service.ValidationUtil
+import com.donler.thirdparty.easemob.server.comm.body.IMUserBody
+import com.donler.thirdparty.easemob.server.comm.body.IMUsersBody
+import com.donler.thirdparty.easemob.server.comm.body.UserNamesBody
+import com.donler.thirdparty.easemob.server.comm.wrapper.BodyWrapper
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ContainerNode
 import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
+import net.sf.json.JSONString
+import org.json.simple.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.Page
@@ -41,6 +49,7 @@ import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
+import java.sql.Wrapper
 
 /**
  * Created by jason on 5/27/16.
@@ -92,15 +101,20 @@ class TeamController {
     @ApiOperation(value = "创建群组", notes = "根据传入的信息创建一个群组,body example: {\"name\": \"篮球小队\", \"desc\": \"我们是一个积极向上的团体\"}")
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/create", method = RequestMethod.POST)
-    ResTeam createTeam(
+    def createTeam(
             @RequestPart
                     String body,
             @ApiParam(value = "只上传单张图片,此处为了统一接口")
             @RequestPart MultipartFile[] files, HttpServletRequest req) {
 
         def currentUser = req.getAttribute("user") as User
-        println(currentUser)
-        TeamCreateRequestBody team = ValidationUtil.validateModelAttribute(TeamCreateRequestBody.class, body)
+        if (!currentUser?.companyId ) {
+            return ResponseMsg.error("请先加入公司,再来创建群组",200)
+        }
+        if (!companyRepository.findOne(currentUser?.companyId)) {
+            return ResponseMsg.error("请先加入公司,再来创建群组",200)
+        }
+        TeamCreateRequestBody team = ValidationUtil.validateModelAttribute(TeamCreateRequestBody.class, body) as TeamCreateRequestBody
 
         def count = teamRepository.countByName(team?.name)
         if (count > 0) {
@@ -115,16 +129,15 @@ class TeamController {
                 desc: team?.desc,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                members: [currentUser.id]
+                members: [currentUser?.id]
 
         ))
         currentUser.myGroup.add(savedTeam.id)
         currentUser.myGroup.unique()
         userRepository.save(currentUser)
-        String easemobid = easemobController.createChatgroups(savedTeam,currentUser)
-        savedTeam.easemobId = easemobid
-        teamRepository.save(savedTeam)
-        return generateResponseByPersistentTeam(savedTeam)
+        def result = easemobController.createChatgroups(savedTeam,currentUser)
+        teamRepository.save(result)
+        return generateResponseByPersistentTeam(result,currentUser)
     }
 
     /**
@@ -219,38 +232,41 @@ class TeamController {
     @ApiOperation(value = "邀请成员", notes = "邀请成员")
     def inviteMember(@Valid @RequestBody TeamInviteMembersRequestBody body, HttpServletRequest req) {
         def currentUser = req.getAttribute("user") as User
-//        try {
-//            body?.membersId?.each {
-                for (int i = 0; i < body.membersId.size(); i++) {
-                    def newMember = userRepository.findOne(body.membersId[i])
-                    def currentTeam = teamRepository.findOne(body?.teamId)
+        def currentTeam = teamRepository.findOne(body?.teamId)
+        try {
+            body?.membersId?.each {
+                    def newMember = userRepository.findOne(it)
 
                     if (!newMember) {
-                        return ResponseMsg.error("请传入正确的用户ID", 200)
+                        throw new Exception("请传入正确的用户ID")
                     }
                     if (!currentTeam) {
-                        return ResponseMsg.error("请传入正确的群组ID", 200)
+                        throw new Exception("请传入正确的群组ID")
                     }
                     if (!currentTeam.companyId.equals(currentUser.companyId)) {
-                        return ResponseMsg.error("该成员不属于此公司,请检查", 200)
+                        throw new Exception("该成员不属于此公司,请检查")
                     }
-                    if (currentTeam.members.contains(body.membersId[i])) {
-                        return ResponseMsg.error("该成员已经存在,请检查", 200)
+                    if (currentTeam.members.contains(it)) {
+                        throw new Exception("该成员id=${it}已经存在,请检查")
                     }
                     if (!currentTeam.members.contains(currentUser.id)) {
-                        return ResponseMsg.error("该成员不在该群内,没有邀请权限", 200)
+                        throw new Exception("该成员不在该群内,没有邀请权限")
                     }
-                    currentTeam.members.add(body.membersId[i])
-                    currentTeam.members.unique()
-                    currentUser.myGroup.add(body?.teamId)
-                    currentUser.myGroup.unique()
-                    userRepository.save(currentUser)
-                    teamRepository.save(currentTeam)
-                    return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+
             }
-//        } catch (Exception ex) {
-//            println(ex)
-//        }
+            body?.membersId?.each {
+                currentTeam.members.add(it)
+                currentTeam.members.unique()
+                currentUser.myGroup.add(body?.teamId)
+                currentUser.myGroup.unique()
+                userRepository.save(currentUser)
+                teamRepository.save(currentTeam)
+            }
+            easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
+            return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+        } catch (Exception ex) {
+            return ex.message
+        }
     }
 
     /**
@@ -427,6 +443,7 @@ class TeamController {
 
 
                 } : null,
+                easemobId: team?.easemobId,
                 teamTrend: [:]
 
         )

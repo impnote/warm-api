@@ -32,4 +32,6 @@ class TeamHomePageModel {
     List<SimpleUserModel> members
     @ApiModelProperty("群组动态")
     Map teamTrend
+    @ApiModelProperty("环信群组id")
+    String easemobId //环信群组id
 }
