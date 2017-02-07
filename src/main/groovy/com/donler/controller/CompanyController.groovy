@@ -16,6 +16,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+
+import javax.validation.Valid
+
 /**
  * Created by jason on 5/27/16.
  */
@@ -57,6 +60,30 @@ class CompanyController {
                 name: saveCompany?.name,
                 emailSuffix: saveCompany?.emailSuffix,
                 image: saveCompany?.image,
+                createdAt: saveCompany?.createdAt,
+                updatedAt: saveCompany?.updatedAt
+        )
+    }
+
+    @ApiOperation(value = "创建公司", notes = "根据传入的信息创建一个公司,body example: {\"name\": \"动梨软件有限公司\", \"emailSuffix\": \"donler\"}")
+    @RequestMapping(path = "/create/no-files", method = RequestMethod.POST)
+    ResCompany createCompanyNoFiles(@Valid @RequestBody CompanyCreateRequestBody body) {
+
+        def count = companyRepository.countByEmailSuffix(body?.emailSuffix)
+        if (count > 0) {
+            throw new AttrNotValidException("该公司已经存在")
+        }
+        Company saveCompany = companyRepository.save(new Company(
+                name: body?.name,
+                emailSuffix: body?.emailSuffix,
+                createdAt: new Date(),
+                updatedAt: new Date()
+
+        ))
+        return new ResCompany(
+                id: saveCompany?.id,
+                name: saveCompany?.name,
+                emailSuffix: saveCompany?.emailSuffix,
                 createdAt: saveCompany?.createdAt,
                 updatedAt: saveCompany?.updatedAt
         )
