@@ -126,14 +126,20 @@ class EasemobController {
         return currentTeam
     }
 
+    /**
+     * 邀请成员
+     * @param groupId
+     * @param body
+     * @return
+     */
     def inviteChatGroupMembers(String groupId, TeamInviteMembersRequestBody body) {
         String [] members = new String[body.membersId.size()]
         body.membersId.toArray(members)
-        ResponseWrapper responseWrapper =  chatgroup.addBatchUsersToChatGroup(groupId, new UserNamesBody(members))
+        ResponseWrapper responseWrapper = chatgroup.addBatchUsersToChatGroup(groupId, new UserNamesBody(members)) as ResponseWrapper
         if (!responseWrapper.responseStatus.equals(200)) {
-            return ResponseMsg.error("环信群组邀请成员失败,请检查",200)
+            return ResponseMsg.error("环信群组邀请成员失败,请检查",400)
         }
-        return
+        return ResponseMsg.ok("邀请成功")
     }
 
 }

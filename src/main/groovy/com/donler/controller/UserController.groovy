@@ -543,12 +543,14 @@ class UserController {
      * @return
      */
     @ApiOperation(value = "选择公司", notes = "用户选择公司", response = ResponseMsg.class)
-    @RequestMapping(path = "/{userId}/choose/company/{companyId}", method = RequestMethod.GET)
-    def chooseCompany(@PathVariable(value = "userId") String userId,@PathVariable(value = "companyId") String companyId) {
+    @RequestMapping(path = "/choose/company/{companyId}", method = RequestMethod.GET)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def chooseCompany(@PathVariable(value = "companyId") String companyId,HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
         def company = !!companyId ? companyRepository.findOne(companyId) : null
-        def user = !!userId ? userRepository.findOne(userId) : null
+//        def user = !!user?.id ? userRepository.findOne(userId) : null
         if (!user) {
-            throw new NotFoundException("id为 ${userId} 的用户不存在")
+            throw new NotFoundException("id为 ${user?.id} 的用户不存在")
         }
         if (!company) {
             throw new NotFoundException("id为 ${companyId} 的公司不存在")

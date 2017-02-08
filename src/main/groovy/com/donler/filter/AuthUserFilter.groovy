@@ -43,6 +43,7 @@ class AuthUserFilter implements Filter {
                 ~/\/team.*/, // 群组中的所有路由
                 ~/\/easemob.*/, // 环信中的所有路由
                 ~/\/user\/profile.*/,// 获取个人资料
+                ~/\/user\/choose\/company.*/
         ]
 
         /**
@@ -60,7 +61,8 @@ class AuthUserFilter implements Filter {
                 ~/\/trend\/topic\/list/,
                 ~/\/user\/profile\/votes/, //获取当前登录用户发布过的投票
                 ~/\/user\/profile.*/,
-                ~/\/trend\/activity\/detail/
+                ~/\/trend\/activity\/detail/,
+                ~/\/user\/choose\/company.*/
 
         ]
 
