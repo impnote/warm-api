@@ -126,7 +126,7 @@ class EasemobController {
         String [] members = new String[currentTeam.members.size()]
         currentTeam.members.toArray(members)
         ResponseWrapper responseWrapper = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.name,true,200,false,currentTeam.authorId,members)) as ResponseWrapper
-        println(responseWrapper)
+//        println(responseWrapper)
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
         String groupid = objectNode.get("data").get("groupid").toString().replace("\"","").trim()
         currentTeam.easemobId = groupid
