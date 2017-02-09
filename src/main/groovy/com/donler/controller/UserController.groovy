@@ -146,7 +146,7 @@ class UserController {
         def currentAvatar = ossService.uploadFileToOSS(files?.first())
         if (userRepository.findByUsername(newBody?.username)) {
             throw new DatabaseDuplicateException("用户名为${newBody?.username}的用户已经存在")
-        } else if (userRepository.findByEmail(newBody?.email)) {
+        } else if (userRepository.findByEmail(newBody?.email)&& newBody?.email != null) {
             throw new DatabaseDuplicateException("邮箱为${newBody?.email}的用户已经存在")
         } else if (userRepository.findByPhone(newBody?.phone)) {
             throw new DatabaseDuplicateException("手机号码为${newBody?.phone}的用户已经存在")
