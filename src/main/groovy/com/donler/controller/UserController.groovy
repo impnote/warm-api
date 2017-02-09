@@ -11,6 +11,7 @@ import com.donler.model.SimpleUserModel
 import com.donler.model.persistent.user.ColleagueItem
 import com.donler.model.persistent.user.Token
 import com.donler.model.persistent.user.User
+import com.donler.model.request.team.TeamInviteMembersRequestBody
 import com.donler.model.request.user.UserAddMemoRequestModel
 import com.donler.model.request.user.UserLoginRequestModel
 import com.donler.model.request.user.UserProfileModifyRequestModel
@@ -36,6 +37,7 @@ import com.donler.service.OSSService
 import com.donler.service.TokenService
 import com.donler.service.ValidationUtil
 import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
+import com.sun.jdi.connect.Connector
 import groovy.xml.QName
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
@@ -470,26 +472,41 @@ class UserController {
     @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
     @RequestMapping(path = "/{userId}/choose/team/{teamId}", method = RequestMethod.GET)
     def chooseTeam(@PathVariable String userId, @PathVariable String teamId) {
-        def user = !!userId ? userRepository.findOne(userId) : null
-        def team = !!teamId ? teamRepository.findOne(teamId) : null
-        if (!user) {
+        def currentUser = !!userId ? userRepository.findOne(userId) : null
+        def currentTeam = !!teamId ? teamRepository.findOne(teamId) : null
+        if (!currentUser) {
             throw new NotFoundException("id为 ${userId} 的用户不存在")
         }
-        if (!team) {
+        if (!currentTeam) {
             throw new NotFoundException("id为 ${teamId} 的群组不存在")
         }
-        for(String member : team.members){
-            if (user.id == member){
-                return ResponseMsg.ok("你已加入该群组",200,generateResponseMyGroupByPersistentUser(user))
-            }
-        }
-        team.members.add(user.id)
-        teamRepository.save(team)
+//        for(String member : team.members){
+//            if (user.id == member){
+//                return ResponseMsg.ok("你已加入该群组",200,generateResponseMyGroupByPersistentUser(user))
+//            }
+//        }
+//        team.members.add(user.id)
+//        teamRepository.save(team)
+//
+//        user.myGroup.add(team.id)
+//        user.myGroup.unique()
+//        userRepository.save(user)
+//        return ResponseMsg.ok(generateResponseMyGroupByPersistentUser(user))
 
-        user.myGroup.add(team.id)
-        user.myGroup.unique()
-        userRepository.save(user)
-        return ResponseMsg.ok(generateResponseMyGroupByPersistentUser(user))
+        def members = []
+        members.add(currentUser?.id)
+        def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, new TeamInviteMembersRequestBody(membersId: members,teamId: currentTeam?.id))
+        if (!message.statusCode.equals(200)) {
+            return ResponseMsg.error("邀请失败", 400)
+        }
+        currentTeam.members.add(currentUser?.id)
+        currentTeam.members.unique()
+        currentUser.myGroup.add(currentTeam?.id)
+        currentUser.myGroup.unique()
+        userRepository.save(currentUser)
+        teamRepository.save(currentTeam)
+        return ResponseMsg.ok("你已加入该群组",200,generateResponseMyGroupByPersistentUser(currentUser))
+
     }
 
     /**

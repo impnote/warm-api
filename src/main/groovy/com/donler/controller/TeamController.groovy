@@ -254,6 +254,10 @@ class TeamController {
                     }
 
             }
+            def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
+            if (!message.statusCode.equals(200)) {
+                return ResponseMsg.error("邀请失败", 400)
+            }
             body?.membersId?.each {
                 currentTeam.members.add(it)
                 currentTeam.members.unique()
@@ -261,10 +265,6 @@ class TeamController {
                 currentUser.myGroup.unique()
                 userRepository.save(currentUser)
                 teamRepository.save(currentTeam)
-            }
-            def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
-            if (message.statusCode.equals(200)) {
-                return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
             }
             return ResponseMsg.error(message.msg,400)
         } catch (Exception ex) {
