@@ -494,6 +494,7 @@ class TeamController {
                 id: team?.id,
                 name: team?.name,
                 imageUrl: team?.image,
+                easemobId: team?.easemobId,
                 isJoined: !!team.members ? team.members.contains(user.id) : false)
     }
 

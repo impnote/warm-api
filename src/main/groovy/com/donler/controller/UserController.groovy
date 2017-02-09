@@ -653,9 +653,10 @@ class UserController {
         myGroup = user?.myGroup?.collect {
             def item = teamRepository.findOne(it)
             return new SimpleTeamModel(
-                    id: item.id,
-                    name: item.name,
-                    imageUrl: item.image,
+                    id: item?.id,
+                    name: item?.name,
+                    imageUrl: item?.image,
+                    easemobId: item?.easemobId,
                     isJoined: !!teamRepository.findOne(item.id).members ? teamRepository.findOne(item.id).members.contains(user.id) : false
             )
         }
@@ -664,9 +665,10 @@ class UserController {
 
     def generateResponseMyGroupByPersistentUser(com.donler.model.persistent.team.Team team,User user){
             return new SimpleTeamModel(
-                    id: team.id,
-                    name: team.name,
-                    imageUrl: team.image,
+                    id: team?.id,
+                    name: team?.name,
+                    imageUrl: team?.image,
+                    easemobId: team?.easemobId,
                     isJoined: !!teamRepository.findOne(team.id).members ? teamRepository.findOne(team.id).members.contains(user.id) : false
             )
 

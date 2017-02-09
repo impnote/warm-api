@@ -13,5 +13,9 @@ class SimpleTeamModel {
     String name // 群组名称
     @ApiModelProperty("群组配图url")
     String imageUrl
+    @ApiModelProperty("环信群组id")
+    String easemobId
+    @ApiModelProperty("是否已经加入")
     boolean isJoined
+
 }
