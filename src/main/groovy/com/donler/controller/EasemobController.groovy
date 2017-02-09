@@ -93,6 +93,14 @@ class EasemobController {
         chatgroup.addBatchUsersToChatGroup(groupId,members as JSON)
     }
 
+    @RequestMapping(value = "/chatgroups/detail", method = RequestMethod.GET)
+    @ApiOperation(value = "获取群组详情")
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    def getChatGroupDetail(@RequestParam String [] groupIds, HttpServletRequest req) {
+        def user = req.getAttribute("user") as User
+        return chatgroup.getChatGroupDetails(groupIds)
+    }
+
     /**
      * 创建环信用户并且返回环信用户id
      * @param name
@@ -117,7 +125,8 @@ class EasemobController {
         currentTeam.members.remove(currentTeam.authorId)
         String [] members = new String[currentTeam.members.size()]
         currentTeam.members.toArray(members)
-        ResponseWrapper responseWrapper = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.desc,true,200,false,currentTeam.authorId,members)) as ResponseWrapper
+        ResponseWrapper responseWrapper = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.name,true,200,false,currentTeam.authorId,members)) as ResponseWrapper
+        println(responseWrapper)
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
         String groupid = objectNode.get("data").get("groupid").toString().replace("\"","").trim()
         currentTeam.easemobId = groupid
@@ -140,6 +149,16 @@ class EasemobController {
             return ResponseMsg.error("环信群组邀请成员失败,请检查",400)
         }
         return ResponseMsg.ok("邀请成功")
+    }
+
+    def deleteChatGroupMembers(String groupId,TeamInviteMembersRequestBody body) {
+        String [] userIds = new String[body.membersId.size()]
+        body.membersId.toArray(userIds)
+        ResponseWrapper responseWrapper = chatgroup.removeBatchUsersFromChatGroup(groupId,userIds) as ResponseWrapper
+        if (!responseWrapper.responseStatus.equals(200)) {
+            return ResponseMsg.error("环信群组删除成员失败,请检查",400)
+        }
+        return ResponseMsg.ok("删除成功")
     }
 
 }

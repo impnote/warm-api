@@ -122,7 +122,7 @@ class TeamController {
         }
         Team savedTeam = teamRepository.save(new Team(
                 name: team?.name,
-                image: ossService.uploadFileToOSS(files.first()),
+                image: ossService.uploadFileToOSS(files?.first()),
                 peopleCount: 1,
                 authorId: currentUser?.id,
                 companyId: currentUser?.companyId,
@@ -132,7 +132,7 @@ class TeamController {
                 members: [currentUser?.id]
 
         ))
-        currentUser.myGroup.add(savedTeam.id)
+        currentUser.myGroup.add(savedTeam?.id)
         currentUser.myGroup.unique()
         userRepository.save(currentUser)
         def result = easemobController.createChatgroups(savedTeam,currentUser)
@@ -262,12 +262,43 @@ class TeamController {
                 userRepository.save(currentUser)
                 teamRepository.save(currentTeam)
             }
-            easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
-            return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+            def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
+            if (message.statusCode.equals(200)) {
+                return ResponseMsg.ok("邀请成功", 200, generateResponseByPersistentTeam(currentTeam, currentUser))
+            }
+            return ResponseMsg.error(message.msg,400)
         } catch (Exception ex) {
             return ex.message
         }
     }
+
+    /**
+     * 删除群组成员
+     * @param body
+     * @param req
+     * @return
+     */
+    @RequestMapping(path = "delete/member", method = RequestMethod.DELETE)
+    @ApiImplicitParam(value = "x-token", required = true, paramType = "header", name = "x-token")
+    @ApiOperation(value = "删除成员", notes = "删除成员")
+    def deleteMember(@Valid @RequestBody TeamInviteMembersRequestBody body, HttpServletRequest req) {
+        def currentUser = req.getAttribute("user") as User
+        def currentTeam = teamRepository.findOne(body?.teamId)
+        if (!currentTeam?.authorId?.equals(currentUser?.id)) {
+            return ResponseMsg.error("你无权进行删除操作",200)
+        }
+        def message = easemobController.deleteChatGroupMembers(currentTeam.easemobId,body)
+        if (!message.statusCode.equals(200)) {
+            return ResponseMsg.error(message.msg,400)
+        }
+        body?.membersId?.each {
+            currentTeam.members.remove(it)
+        }
+        teamRepository.save(currentTeam)
+         return ResponseMsg.ok("删除成功",200,currentTeam)
+    }
+
+
 
     /**
      * 获取群组主页
@@ -357,9 +388,6 @@ class TeamController {
 
 
     }
-
-//    @ApiOperation(value = "获取群组列表(分页)", notes = "获取包含某关键字的群组列表或者该用户所在公司的全部群组列表")
-//    @RequestMapping(path = "/team/detail",method = RequestMethod.GET)
 
     /**
      * 更具持久化生成响应的team model
