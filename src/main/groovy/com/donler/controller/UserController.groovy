@@ -144,7 +144,7 @@ class UserController {
         UserRegisterRequestModel newBody = ValidationUtil.validateModelAttribute(UserRegisterRequestModel.class,body)
         def company = !!newBody?.companyId ? companyRepository.findOne(newBody?.companyId) : null
         def currentAvatar = ossService.uploadFileToOSS(files?.first())
-        if (userRepository.findByUsername(newBody?.username)) {
+        if (userRepository.findByUsername(newBody?.username)&& newBody?.username != null) {
             throw new DatabaseDuplicateException("用户名为${newBody?.username}的用户已经存在")
         } else if (userRepository.findByEmail(newBody?.email)&& newBody?.email != null) {
             throw new DatabaseDuplicateException("邮箱为${newBody?.email}的用户已经存在")

@@ -18,6 +18,7 @@ class UserRegisterRequestModel {
     @NotNull
     @ApiModelProperty(notes = "性别", example = "男")
     String gender
+    @NotNull
     @ApiModelProperty(notes = "号码", example = "17051024060")
     @Pattern(regexp = "^(0|86|17951)?(13[0-9]|15[012356789]|17[0-9]|18[0-9]|14[57])[0-9]{8}\$", message = "手机号码不正确")
     String phone
