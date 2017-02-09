@@ -255,7 +255,7 @@ class TeamController {
 
             }
             def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, body)
-            if (!message.statusCode.equals(200)) {
+            if (message.statusCode.equals(200)) {
                 return ResponseMsg.error("邀请失败", 400)
             }
             body?.membersId?.each {

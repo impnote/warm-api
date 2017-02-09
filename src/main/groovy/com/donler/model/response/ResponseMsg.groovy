@@ -1,6 +1,8 @@
 package com.donler.model.response
 
 import io.swagger.annotations.ApiModelProperty
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 
 /**
  * Created by jason on 5/26/16.
@@ -21,8 +23,11 @@ class ResponseMsg {
         return new ResponseMsg(msg: "请求成功", statusCode: 200, data: data)
     }
 
-    static error(def msg, def code) {
+    static errorStatus(def msg, def code) {
         return new ResponseMsg(msg: msg, statusCode: code)
+    }
+    static error(def msg, int code) {
+        return new ResponseEntity(msg,HttpStatus.valueOf(code))
     }
 
     static ok(String msg, Integer statusCode, def data) {

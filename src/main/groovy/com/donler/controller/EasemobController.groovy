@@ -110,6 +110,9 @@ class EasemobController {
      */
     def createUser(String name, String password, String nickname) {
         ResponseWrapper responseWrapper = user.createNewIMUserSingle(new IMUserBody(name, password, nickname)) as ResponseWrapper
+//        if (!responseWrapper.responseStatus.equals(200)) {
+//            return ResponseMsg.errorStatus("创建用户错误,请检查",400)
+//        }
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
         String uuid = objectNode.get("entities").get(0).get("uuid").toString().replace("\"","").trim()
         return uuid
@@ -127,6 +130,9 @@ class EasemobController {
         currentTeam.members.toArray(members)
         ResponseWrapper responseWrapper = chatgroup.createChatGroup(new ChatGroupBody(currentTeam.name,currentTeam.name,true,200,false,currentTeam.authorId,members)) as ResponseWrapper
 //        println(responseWrapper)
+//        if (!responseWrapper.responseStatus.equals(200)) {
+//            return ResponseMsg.errorStatus("创建用户错误,请检查",400)
+//        }
         ObjectNode objectNode = responseWrapper.getResponseBody() as ObjectNode
         String groupid = objectNode.get("data").get("groupid").toString().replace("\"","").trim()
         currentTeam.easemobId = groupid
@@ -146,7 +152,7 @@ class EasemobController {
         body.membersId.toArray(members)
         ResponseWrapper responseWrapper = chatgroup.addBatchUsersToChatGroup(groupId, new UserNamesBody(members)) as ResponseWrapper
         if (!responseWrapper.responseStatus.equals(200)) {
-            return ResponseMsg.error("环信群组邀请成员失败,请检查",400)
+            return ResponseMsg.errorStatus("环信群组邀请成员失败,请检查",400)
         }
         return ResponseMsg.ok("邀请成功")
     }
@@ -156,7 +162,7 @@ class EasemobController {
         body.membersId.toArray(userIds)
         ResponseWrapper responseWrapper = chatgroup.removeBatchUsersFromChatGroup(groupId,userIds) as ResponseWrapper
         if (!responseWrapper.responseStatus.equals(200)) {
-            return ResponseMsg.error("环信群组删除成员失败,请检查",400)
+            return ResponseMsg.errorStatus("环信群组删除成员失败,请检查",400)
         }
         return ResponseMsg.ok("删除成功")
     }

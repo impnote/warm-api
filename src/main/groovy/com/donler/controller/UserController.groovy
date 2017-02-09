@@ -36,6 +36,7 @@ import com.donler.service.MD5Util
 import com.donler.service.OSSService
 import com.donler.service.TokenService
 import com.donler.service.ValidationUtil
+import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper
 import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
 import com.sun.jdi.connect.Connector
 import groovy.xml.QName
@@ -495,7 +496,7 @@ class UserController {
 
         def members = []
         members.add(currentUser?.id)
-        def message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, new TeamInviteMembersRequestBody(membersId: members,teamId: currentTeam?.id))
+        ResponseMsg message = easemobController.inviteChatGroupMembers(currentTeam.easemobId, new TeamInviteMembersRequestBody(membersId: members,teamId: currentTeam?.id)) as ResponseMsg
         if (!message.statusCode.equals(200)) {
             return ResponseMsg.error("邀请失败", 400)
         }
