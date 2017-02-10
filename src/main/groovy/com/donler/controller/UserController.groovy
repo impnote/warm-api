@@ -34,6 +34,7 @@ import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
+import org.apache.commons.lang.ObjectUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.PageRequest
@@ -275,15 +276,15 @@ class UserController {
                     break
                 case Constants.TypeEnum.Activity:
                     def newActivity = activityRepository.findOne(it.trendId)
-                    !!newActivity.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newActivity.image, createdAt: newActivity.createdAt)) : null
+                    !!newActivity.image ? newList.add(new ColleagueTrendItem(imgurl: newActivity.image, createdAt: newActivity.createdAt)) : null
                     break
                 case Constants.TypeEnum.Topic:
                     def newTopic = topicRepository.findOne(it.trendId)
-                    !!newTopic.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newTopic.image, createdAt: newTopic.createdAt)) : null
+                    !!newTopic.image ? newList.add(new ColleagueTrendItem(imgurl: newTopic.image, createdAt: newTopic.createdAt)) : null
                     break
                 case Constants.TypeEnum.Vote:
                     def newVote = voteRepository.findOne(it.trendId)
-                    !!newVote.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newVote.image, createdAt: newVote.createdAt)) : null
+                    !!newVote.image ? newList.add(new ColleagueTrendItem(imgurl: newVote.image, createdAt: newVote.createdAt)) : null
                     break
             }
         }
