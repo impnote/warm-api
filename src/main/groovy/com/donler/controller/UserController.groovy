@@ -289,19 +289,19 @@ class UserController {
             switch (it.typeEnum) {
                 case Constants.TypeEnum.Showtime:
                     def newShowtime = showtimeRepository.findOne(it.trendId)
-                    !!newShowtime.images ? newList.add(new ColleagueTrendItem(imgurl: newShowtime.images, createdAt: newShowtime.createdAt)) : null
+                    (!!newShowtime.images.size()>0) ? newList.add(new ColleagueTrendItem(imgurl: newShowtime.images, createdAt: newShowtime.createdAt)) : null
                     break
                 case Constants.TypeEnum.Activity:
                     def newActivity = activityRepository.findOne(it.trendId)
-                    !!newActivity.image ? newList.add(new ColleagueTrendItem(imgurl: newActivity.image, createdAt: newActivity.createdAt)) : null
+                    !!newActivity.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newActivity.image, createdAt: newActivity.createdAt)) : null
                     break
                 case Constants.TypeEnum.Topic:
                     def newTopic = topicRepository.findOne(it.trendId)
-                    !!newTopic.image ? newList.add(new ColleagueTrendItem(imgurl: newTopic.image, createdAt: newTopic.createdAt)) : null
+                    !!newTopic.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newTopic.image, createdAt: newTopic.createdAt)) : null
                     break
                 case Constants.TypeEnum.Vote:
                     def newVote = voteRepository.findOne(it.trendId)
-                    !!newVote.image ? newList.add(new ColleagueTrendItem(imgurl: newVote.image, createdAt: newVote.createdAt)) : null
+                    !!newVote.image.equals(null) ? newList.add(new ColleagueTrendItem(imgurl: newVote.image, createdAt: newVote.createdAt)) : null
                     break
             }
         }
