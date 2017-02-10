@@ -18,17 +18,10 @@ import com.donler.model.request.user.UserProfileModifyRequestModel
 import com.donler.model.request.user.UserRegisterRequestModel
 import com.donler.model.response.ColleagueTrendItem
 import com.donler.model.response.ResponseMsg
-import com.donler.model.response.Showtime
-import com.donler.model.response.Team
 import com.donler.model.response.User as ResUser
-import com.donler.model.response.Vote
 import com.donler.repository.company.CompanyRepository
 import com.donler.repository.team.TeamRepository
-import com.donler.repository.trend.ActivityRepository
-import com.donler.repository.trend.ShowtimeRepository
-import com.donler.repository.trend.TopicRepository
-import com.donler.repository.trend.TrendItemRepository
-import com.donler.repository.trend.VoteRepository
+import com.donler.repository.trend.*
 import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
@@ -36,31 +29,20 @@ import com.donler.service.MD5Util
 import com.donler.service.OSSService
 import com.donler.service.TokenService
 import com.donler.service.ValidationUtil
-import com.donler.thirdparty.easemob.server.comm.wrapper.ResponseWrapper
-import com.fasterxml.jackson.jaxrs.json.annotation.JSONP.Def
-import com.sun.jdi.connect.Connector
-import groovy.xml.QName
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
-import net.sf.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Required
 import org.springframework.core.convert.converter.Converter
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
-import java.text.Collator
-import java.util.function.Predicate
 
 /**
  * Created by jason on 5/27/16.
