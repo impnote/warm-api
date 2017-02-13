@@ -352,19 +352,27 @@ class TeamController {
             switch (it.typeEnum) {
                 case Constants.TypeEnum.Showtime:
                     def newShowtime = showtimeRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseShowtimeByPersistentShowtime(newShowtime, user))
+                    def res = trendController.generateResponseShowtimeByPersistentShowtime(newShowtime, user)
+                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    newList.add(res)
                     break
                 case Constants.TypeEnum.Activity:
                     def newActivity = activityRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseActivityByPersistentActivity(newActivity, user))
+                    def res = trendController.generateResponseActivityByPersistentActivity(newActivity, user)
+                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    newList.add(res)
                     break
                 case Constants.TypeEnum.Topic:
                     def newTopic = topicRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseTopicByPersistentTopic(newTopic))
+                    def res = trendController.generateResponseTopicByPersistentTopic(newTopic)
+                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    newList.add(res)
                     break
                 case Constants.TypeEnum.Vote:
                     def newVote = voteRepository.findOne(it.trendId)
-                    newList.add(trendController.generateResponseVoteByPersistentVote(newVote, user))
+                    def res = trendController.generateResponseVoteByPersistentVote(newVote, user)
+                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    newList.add(res)
                     break
             }
         }
