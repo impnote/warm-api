@@ -353,25 +353,25 @@ class TeamController {
                 case Constants.TypeEnum.Showtime:
                     def newShowtime = showtimeRepository.findOne(it.trendId)
                     def res = trendController.generateResponseShowtimeByPersistentShowtime(newShowtime, user)
-                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    res.team.isJoined = !!team.members ? team.members.contains(user?.id) : false
                     newList.add(res)
                     break
                 case Constants.TypeEnum.Activity:
                     def newActivity = activityRepository.findOne(it.trendId)
                     def res = trendController.generateResponseActivityByPersistentActivity(newActivity, user)
-                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    res.team.isJoined = !!team.members ? team.members.contains(user?.id) : false
                     newList.add(res)
                     break
                 case Constants.TypeEnum.Topic:
                     def newTopic = topicRepository.findOne(it.trendId)
                     def res = trendController.generateResponseTopicByPersistentTopic(newTopic)
-                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    res.team.isJoined = !!team.members ? team.members.contains(user?.id) : false
                     newList.add(res)
                     break
                 case Constants.TypeEnum.Vote:
                     def newVote = voteRepository.findOne(it.trendId)
                     def res = trendController.generateResponseVoteByPersistentVote(newVote, user)
-                    res.team.isJoined = !!team.members ? team.members.contains(user.id) : false
+                    res.team.isJoined = !!team.members ? team.members.contains(user?.id) : false
                     newList.add(res)
                     break
             }

@@ -43,7 +43,9 @@ class AuthUserFilter implements Filter {
                 ~/\/team.*/, // 群组中的所有路由
                 ~/\/easemob.*/, // 环信中的所有路由
                 ~/\/user\/profile.*/,// 获取个人资料
-                ~/\/user\/choose\/company.*/
+                ~/\/user\/choose\/company.*/,
+                ~/\/team\/team\/detail/, // 群组中的所有的搜索的get请求
+
         ]
 
         /**
@@ -52,6 +54,7 @@ class AuthUserFilter implements Filter {
         def needAuthsOfGetMethod = [
                 ~/\/easemob.*/, // 环信中的所有路由
                 ~/\/team(.*)search/, // 群组中的所有的搜索的get请求
+                ~/\/team\/team\/detail/, // 群组中的所有的搜索的get请求
                 ~/\/trend(.*)search/, // 动态的中的所有搜索的get请求
                 ~/\/user\/profile/, // 获取个人资料的get请求
                 ~/\/trend\/showtime\/list/, //根据指定id分页获取瞬间之前的瞬间
