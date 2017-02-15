@@ -34,7 +34,7 @@ import java.util.Map;
  */
 
 @Service
-public class JavaSmsApi {
+public class YunpianService {
 
     @Autowired
     YunpianConfig yunpianConfig
@@ -60,22 +60,28 @@ public class JavaSmsApi {
     private static String ENCODING = "UTF-8";
 
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
-
-        //修改为您的apikey.apikey可在官网（http://www.yunpian.com)登录后获取
-        String apikey = "1120ac9e776bf068778573feebddec43";
-
-        //修改为您要发送的手机号
-        String mobile = "18205253835";
 
 
-        /**************** 使用智能匹配模板接口发短信(推荐) *****************/
-        //设置您要发送的内容(内容必须和某个模板匹配。以下例子匹配的是系统提供的1号模板）
-        String text = "【云片网】您的验证码是1234";
-        //发短信调用示例
-         System.out.println(JavaSmsApi.sendSms(apikey, text, mobile));
 
-    }
+
+
+
+//    public static void main(String[] args) throws IOException, URISyntaxException {
+//
+//        //修改为您的apikey.apikey可在官网（http://www.yunpian.com)登录后获取
+//        String apikey = "1120ac9e776bf068778573feebddec43";
+//
+//        //修改为您要发送的手机号
+//        String mobile = "18205253835";
+//
+//
+//        /**************** 使用智能匹配模板接口发短信(推荐) *****************/
+//        //设置您要发送的内容(内容必须和某个模板匹配。以下例子匹配的是系统提供的1号模板）
+//        String text = "【动梨科技】您的验证码是1234。如非本人操作，请忽略本短信";
+//        //发短信调用示例
+//         System.out.println(JavaSmsApi.sendSms(apikey, text, mobile));
+//
+//    }
 
     /**
      * 取账户信息
@@ -100,7 +106,9 @@ public class JavaSmsApi {
      * @throws IOException
      */
 
-    public static String sendSms(String apikey, String text, String mobile) throws IOException {
+    public String sendSms( int code, String mobile) throws IOException {
+        String apikey = yunpianConfig.apiKey
+        String text = "【动梨科技】您的验证码是${code}。如非本人操作，请忽略本短信";
         Map<String, String> params = new HashMap<String, String>();
         params.put("apikey", apikey);
         params.put("text", text);

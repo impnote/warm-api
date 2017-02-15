@@ -25,16 +25,14 @@ import com.donler.repository.trend.*
 import com.donler.repository.user.ColleagueItemRepository
 import com.donler.repository.user.TokenRepository
 import com.donler.repository.user.UserRepository
-import com.donler.service.MD5Util
-import com.donler.service.OSSService
-import com.donler.service.TokenService
-import com.donler.service.ValidationUtil
+import com.donler.service.*
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import net.sf.json.JSON
-import org.apache.commons.lang.ObjectUtils
+import net.sf.json.util.JSONBuilder
+import org.json.simple.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.domain.PageRequest
@@ -98,6 +96,8 @@ class UserController {
     @Autowired
     EasemobController easemobController
 
+    @Autowired
+    YunpianService yunpianService
 
 
 
@@ -152,6 +152,21 @@ class UserController {
             savedUser.easemobId = uuid
             userRepository.save(savedUser)
         }
+    }
+
+    @ApiOperation(value = "获取验证码", notes = "获取验证码")
+    @RequestMapping(path = "/code", method = RequestMethod.GET)
+    def getCode(@RequestParam String phone) {
+        Random random = new Random()
+        int code = random.nextInt(9999-1000+1)+1000
+        def res = yunpianService.sendSms(code, phone)
+        net.sf.json.JSONObject jsonObject1 = net.sf.json.JSONObject.fromObject(res)
+        if (jsonObject1.get("code").equals(0)) {
+            JSONObject jsonObject = new JSONObject()
+            jsonObject.put("code",code)
+            return jsonObject
+        }
+        return ResponseMsg.error("发送验证码错误,请检查",400)
     }
 
     /**
