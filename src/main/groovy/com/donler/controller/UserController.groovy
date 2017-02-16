@@ -164,7 +164,7 @@ class UserController {
         if (jsonObject1.get("code").equals(0)) {
             JSONObject jsonObject = new JSONObject()
             jsonObject.put("code",code)
-            return jsonObject
+            return ResponseMsg.ok(jsonObject)
         }
         return ResponseMsg.error("发送验证码错误,请检查",400)
     }
